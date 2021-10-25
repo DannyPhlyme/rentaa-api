@@ -1,24 +1,21 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   UploadedFile,
-  UseInterceptors,
   UploadedFiles,
-  HttpException,
-  HttpStatus,
+  UseInterceptors,
 } from '@nestjs/common';
-import { GadgetsService } from './gadgets.service';
-import { CreateGadgetDto } from './dto/create-gadget.dto';
-import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/config';
-// import { Gadget } from '../entities/gadgets/gadget.entity';
 import { CreatePhotoDto } from '../photos/create-photo.dto';
+import { CreateGadgetDto } from './dto/create-gadget.dto';
+import { UpdateGadgetDto } from './dto/update-gadget.dto';
+import { GadgetsService } from './gadgets.service';
 
 @Controller('gadgets')
 export class GadgetsController {
@@ -30,14 +27,6 @@ export class GadgetsController {
     @Body() createGadgetDto: CreateGadgetDto,
     @UploadedFiles() photos: Array<Express.Multer.File>,
   ) {
-    if (
-      Number(createGadgetDto.price) == NaN &&
-      Number(createGadgetDto.categoryId) == NaN
-    )
-      throw new HttpException('not a number', HttpStatus.BAD_REQUEST);
-
-    // createGadgetDto.price = Number(createGadgetDto.price)
-
     const photoDtoArray: Array<CreatePhotoDto> = [];
 
     photos.forEach((photo) => {
@@ -69,11 +58,7 @@ export class GadgetsController {
   @Post('/upload/photo')
   @UseInterceptors(FileInterceptor('photo', multerOptions))
   async uploadFile(@UploadedFile() photo: Express.Multer.File) {
-    // if (photo.size == 0) {
-    //   throw new HttpException('file cannot be empty', HttpStatus.BAD_REQUEST);
-    // }
     console.log(photo);
-    // await this.sleep(200);
   }
 
   @Post('/upload/photos')
@@ -92,21 +77,4 @@ export class GadgetsController {
       setTimeout(resolve, ms);
     });
   }
-
-  // {
-  //   fieldname: 'photos',
-  //   originalname: 'apiKey-WL4NFMOUHYS7O3UF.txt',
-  //   encoding: '7bit',
-  //   mimetype: 'text/plain',
-  //   destination: './uploads',
-  //   filename: '3ac8b1f39b656bfa7e1841a3a13d8613',
-  //   path: 'uploads\\3ac8b1f39b656bfa7e1841a3a13d8613',
-  //   size: 103
-  // },
-
-  // private convertGadgetDTOToEntity(): Gadget {
-  //   let gadget: Gadget = new Gadget();
-
-  //   return gadget;
-  // }
 }

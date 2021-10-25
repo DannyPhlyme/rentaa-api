@@ -1,4 +1,3 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
 import {
   IsDateString,
   IsInt,
@@ -6,6 +5,7 @@ import {
   IsNumber,
   IsString,
   Length,
+  ValidateIf,
 } from 'class-validator';
 
 /**
@@ -24,6 +24,7 @@ export class CreateGadgetDto {
   @Length(2, 200)
   description: string;
 
+  @ValidateIf((v) => Number.isNaN(v))
   @IsNumber(
     { maxDecimalPlaces: 2 },
     { message: 'price should be 2 decimal places max' },
@@ -39,6 +40,7 @@ export class CreateGadgetDto {
   })
   pickup_date: Date;
 
+  @ValidateIf((v) => Number.isInteger(v))
   @IsInt()
   categoryId: number;
 }

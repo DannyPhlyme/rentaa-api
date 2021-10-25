@@ -51,26 +51,22 @@ export class GadgetsService {
       });
 
       gadget = await this.gadgetRepository.save(gadget);
+      gadget.price = Number(gadget.price);
 
-      const photoArray: Array<GadgetPhoto> = [];
       photoDtoArray.forEach(async (photoDto) => {
         let photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
         photo = await this.photoRepository.save(photo);
-        photoArray.push(photo);
       });
 
       return {
         success: true,
         gadget,
         category,
-        photoArray,
       };
     } catch (error) {
       throw new HttpException(
-        error.response
-          ? error.response
-          : `Error in processing user registration`,
+        error.response ? error.response : `Error in processing gadget listing`,
         error.status ? error.status : 422,
       );
     }
