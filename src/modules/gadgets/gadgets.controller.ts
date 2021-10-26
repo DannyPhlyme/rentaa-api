@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -27,11 +29,15 @@ export class GadgetsController {
     @Body() createGadgetDto: CreateGadgetDto,
     @UploadedFiles() photos: Array<Express.Multer.File>,
   ) {
+    if (photos.length == 0)
+      throw new HttpException('no photo uploaded', HttpStatus.BAD_REQUEST);
+
     const photoDtoArray: Array<CreatePhotoDto> = [];
 
     photos.forEach((photo) => {
       photoDtoArray.push(Object.assign({}, photo));
     });
+    console.log(photos);
     return await this.gadgetsService.create(createGadgetDto, photoDtoArray);
   }
 

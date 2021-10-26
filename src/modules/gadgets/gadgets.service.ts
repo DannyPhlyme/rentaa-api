@@ -26,6 +26,8 @@ export class GadgetsService {
     photoDtoArray: Array<CreatePhotoDto>,
   ) {
     try {
+      createGadgetDto.price = this.convertTo2dp(createGadgetDto.price); // convert price to 2 dp
+
       const { name, description, price, address, pickup_date, categoryId } =
         createGadgetDto;
 
@@ -86,5 +88,9 @@ export class GadgetsService {
 
   remove(id: number) {
     return `This action removes a #${id} gadget`;
+  }
+
+  private convertTo2dp(value: number): number {
+    return Number(Number.parseFloat(String(value)).toFixed(2));
   }
 }

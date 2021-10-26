@@ -25,10 +25,7 @@ export class CreateGadgetDto {
   description: string;
 
   @ValidateIf((v) => Number.isNaN(v))
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'price should be 2 decimal places max' },
-  )
+  @IsNumber()
   price: number;
 
   @IsString()
