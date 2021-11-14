@@ -1,7 +1,7 @@
 import { IsInt, IsString } from 'class-validator';
 
 /**
- * Represents the form that Gadget request data takes. Does not map
+ * Represents the form that a Gadget Photo request data takes. Does not map
  * to the database directly.
  *
  * @class

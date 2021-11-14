@@ -1,7 +1,8 @@
 import { Column, Entity, OneToMany, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../base.entity';
-import { Category } from './category.entity';
-import { GadgetPhoto } from './gadget-photo.entity';
+import { BaseEntity } from '../base';
+import { Category } from './category';
+import { GadgetPhoto } from './gadget-photo';
+import { User } from '../auth/user';
 
 /**
  * Declares the Gadget entity class
@@ -10,7 +11,10 @@ import { GadgetPhoto } from './gadget-photo.entity';
   name: 'gadgets',
 })
 export class Gadget extends BaseEntity {
-  @ManyToOne(() => Gadget, (gadget) => gadget.photos)
+  @ManyToOne(() => User, (user) => user.gadgets)
+  user: User;
+
+  @ManyToOne(() => Category, (category) => category.gadgets)
   category: Category;
 
   @OneToMany(() => GadgetPhoto, (photo) => photo.gadget, {

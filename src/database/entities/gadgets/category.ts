@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm';
-import { BaseEntity } from '../base.entity';
+import { BaseEntity } from '../base';
 // import { ICategory } from '../../interfaces/category.interface';
-import { Gadget } from './gadget.entity';
+import { Gadget } from './gadget';
 
 /**
  * Declares the Category entity class
@@ -10,10 +10,8 @@ import { Gadget } from './gadget.entity';
   name: 'categories',
 })
 export class Category extends BaseEntity {
-  @OneToMany(() => Gadget, (gadget) => gadget.category, {
-    onDelete: 'SET NULL',
-  })
-  gadget: Gadget;
+  @OneToMany(() => Gadget, (gadget) => gadget.category)
+  gadgets: Gadget[];
 
   @Column({
     type: 'varchar',

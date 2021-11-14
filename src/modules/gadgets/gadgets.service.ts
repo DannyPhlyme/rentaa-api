@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateGadgetDto } from './dto/create-gadget.dto';
 import { UpdateGadgetDto } from './dto/update-gadget.dto';
-import { Gadget } from '../../entities/gadgets/gadget.entity';
+import { Gadget } from '../../database/entities/gadgets/gadget';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Category } from '../../entities/gadgets/category.entity';
-import { GadgetPhoto } from '../../entities/gadgets/gadget-photo.entity';
-import { CreatePhotoDto } from '../photos/create-photo.dto';
+import { Category } from '../../database/entities/gadgets/category';
+import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
+import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
+import { User } from '../../database/entities/auth/user';
 
 @Injectable()
 export class GadgetsService {
@@ -21,13 +22,19 @@ export class GadgetsService {
     private photoRepository: Repository<GadgetPhoto>,
   ) {}
 
+  /**
+   * List gadget service method
+   * @param createGadgetDto
+   * @param photoDtoArray
+   * @param user
+   * @returns
+   */
   public async create(
     createGadgetDto: CreateGadgetDto,
     photoDtoArray: Array<CreatePhotoDto>,
+    user: User,
   ) {
     try {
-      createGadgetDto.price = this.convertTo2dp(createGadgetDto.price); // convert price to 2 dp
-
       const { name, description, price, address, pickup_date, categoryId } =
         createGadgetDto;
 
@@ -46,14 +53,14 @@ export class GadgetsService {
       let gadget: Gadget = this.gadgetRepository.create({
         name,
         description,
-        price,
+        price: Number.parseFloat(price),
         address,
         pickup_date,
         category,
+        user,
       });
 
       gadget = await this.gadgetRepository.save(gadget);
-      gadget.price = Number(gadget.price);
 
       photoDtoArray.forEach(async (photoDto) => {
         let photo: GadgetPhoto = this.photoRepository.create(photoDto);
@@ -64,7 +71,6 @@ export class GadgetsService {
       return {
         success: true,
         gadget,
-        category,
       };
     } catch (error) {
       throw new HttpException(
@@ -90,7 +96,7 @@ export class GadgetsService {
     return `This action removes a #${id} gadget`;
   }
 
-  private convertTo2dp(value: number): number {
-    return Number(Number.parseFloat(String(value)).toFixed(2));
-  }
+  // private convertTo2dp(value: number): number {
+  //   return Number(Number.parseFloat(String(value)).toFixed(2));
+  // }
 }

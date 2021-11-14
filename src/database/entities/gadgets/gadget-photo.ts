@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../base.entity';
+import { BaseEntity } from '../base';
 // import { ImageType } from '../enum';
-import { Gadget } from './gadget.entity';
+import { Gadget } from './gadget';
 
 /**
  * Declares the GadgetPhoto entity class
