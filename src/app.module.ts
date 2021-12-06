@@ -6,9 +6,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GadgetsModule } from './modules/gadgets/gadgets.module';
 import { ValidationPipe } from './validation.pipe';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/users/user.module';
 
 @Module({
   imports: [
+    AuthModule,
+    UserModule,
     GadgetsModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
@@ -22,7 +26,7 @@ import { ValidationPipe } from './validation.pipe';
         rejectUnauthorized: false,
       },
       // options: {"trustServerCertificate": true},
-      entities: ['dist/entities/*/*.entity{.ts,.js}'],
+      entities: ['dist/database/entities/*/*{.ts,.js}'],
       migrations: ['migrations/*{.ts,.js}'],
       synchronize: true,
     }),

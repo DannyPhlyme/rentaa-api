@@ -1,8 +1,6 @@
 import {
   IsDateString,
-  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsString,
   Length,
   ValidateIf,
@@ -21,15 +19,18 @@ export class CreateGadgetDto {
   name: string;
 
   @IsString()
-  @Length(2, 200)
+  @Length(10, 200)
   description: string;
 
-  @ValidateIf((v) => Number.isNaN(v))
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'price should be 2 decimal places max' },
-  )
-  price: number;
+  /**
+   * @todo will fix this thing later
+   * Fix 1: Use class-transformer's plainToClass and class-validator
+   * to create a decorator that converts the price to a number and
+   * also check fot tests, e.g, check if it is NaN, etc.
+   */
+  // @ValidateIf((v) => Number.isNaN(v))
+  @IsString()
+  price: string;
 
   @IsString()
   @Length(3, 100)
@@ -40,7 +41,6 @@ export class CreateGadgetDto {
   })
   pickup_date: Date;
 
-  @ValidateIf((v) => Number.isInteger(v))
-  @IsInt()
-  categoryId: number;
+  @IsString()
+  categoryId: string;
 }
