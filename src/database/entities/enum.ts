@@ -10,6 +10,17 @@ enum TokenReason {
   RESET_PASSWORD = 'reset-password',
 }
 
+enum GadgetCondition {
+  VERIFIED = 'verified',
+  UNVERIFIED = 'unverified',
+}
+
+enum GadgetStatus {
+  UNAVAILABLE = 'unavailable',
+  AVAILABLE = 'available',
+  RENTED_OUT = 'rented out',
+}
+
 enum ImageType {
   JPEG = 'jpeg',
   PNG = 'png',
@@ -52,4 +63,11 @@ const emailTemplate = (
   }
 };
 
-export { Status, TokenReason, ImageType, emailTemplate };
+export {
+  Status,
+  TokenReason,
+  ImageType,
+  GadgetCondition,
+  GadgetStatus,
+  emailTemplate,
+};

@@ -36,7 +36,7 @@ export class GadgetsController {
    */
   @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FilesInterceptor('photos', 2, multerOptions))
+  @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
   async create(
     @Body() createGadgetDto: CreateGadgetDto,
     @UploadedFiles() photos: Array<Express.Multer.File>,
@@ -45,22 +45,10 @@ export class GadgetsController {
     if (photos.length == 0)
       throw new HttpException('no photo uploaded', HttpStatus.BAD_REQUEST);
 
-    /**
-     * Price validation
-     */
-    if (parseFloat(createGadgetDto.price) == NaN)
-      throw new HttpException('price is not a number', HttpStatus.BAD_REQUEST);
-    else if (!createGadgetDto.price.includes('.')) null;
-    else if (createGadgetDto.price.split('.')[1].length > 2)
-      throw new HttpException(
-        'price cannot be greater than 2 d.p',
-        HttpStatus.BAD_REQUEST,
-      );
-
     const photoDtoArray: Array<CreatePhotoDto> = []; // empty photoDto array
-
     photos.forEach((photo) => {
-      photoDtoArray.push(Object.assign({}, photo)); // clone all photo properties and push to photoDto array
+      const obj = { cover: false };
+      photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties and push to photoDto array
     });
 
     // console.log(photos); // print photos to console
@@ -72,14 +60,27 @@ export class GadgetsController {
     );
   }
 
+  /**
+   * Find all gadget controller method
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.gadgetsService.findAll();
+  async findAll(@Request() request) {
+    return await this.gadgetsService.findAll(<User>request.user);
   }
 
+  /**
+   * Fine one gadget controller method
+   * @param id
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.gadgetsService.findOne(+id);
+  async findOne(@Param('id') id: string, @Request() request) {
+    return await this.gadgetsService.findOne(id, <User>request.user);
   }
 
   @Patch(':id')
@@ -112,7 +113,8 @@ export class GadgetsController {
     const photoDtoArray: Array<CreatePhotoDto> = [];
 
     photos.forEach((photo) => {
-      photoDtoArray.push(Object.assign({}, photo));
+      const obj = { cover: false };
+      photoDtoArray.push(Object.assign(obj, photo));
     });
     console.log(photoDtoArray);
   }

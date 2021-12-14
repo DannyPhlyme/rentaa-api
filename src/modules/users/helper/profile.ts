@@ -2,8 +2,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/database/entities/auth/user';
 import { Repository } from 'typeorm';
 import {
+  InternalServerErrorException,
   NotFoundException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 
 export class ProfileInfo {
@@ -32,9 +32,9 @@ export class ProfileInfo {
         message: `Profile fetch Successful`,
       };
     } catch (e) {
-      throw new UnprocessableEntityException({
+      throw new InternalServerErrorException({
         error: e,
-        message: `Error in processing fetch profile`,
+        message: `This is an unexpected error, please contact support`,
       });
     }
   }

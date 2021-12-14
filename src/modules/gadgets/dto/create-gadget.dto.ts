@@ -1,10 +1,5 @@
-import {
-  IsDateString,
-  IsNotEmpty,
-  IsString,
-  Length,
-  ValidateIf,
-} from 'class-validator';
+import { IsDateString, IsString, IsUUID, Length } from 'class-validator';
+import { IsValidPrice } from '../../../validators/is-valid-price.validator';
 
 /**
  * Represents the form that Gadget request data takes. Does not map
@@ -14,7 +9,6 @@ import {
  */
 export class CreateGadgetDto {
   @IsString()
-  @IsNotEmpty({ message: 'name cannot be empty' })
   @Length(3, 100, { message: 'name should not be less than 3 chars' })
   name: string;
 
@@ -22,14 +16,7 @@ export class CreateGadgetDto {
   @Length(10, 200)
   description: string;
 
-  /**
-   * @todo will fix this thing later
-   * Fix 1: Use class-transformer's plainToClass and class-validator
-   * to create a decorator that converts the price to a number and
-   * also check fot tests, e.g, check if it is NaN, etc.
-   */
-  // @ValidateIf((v) => Number.isNaN(v))
-  @IsString()
+  @IsValidPrice()
   price: string;
 
   @IsString()
@@ -41,6 +28,8 @@ export class CreateGadgetDto {
   })
   pickup_date: Date;
 
-  @IsString()
+  @IsUUID('all', {
+    message: 'please provide a valid category',
+  })
   categoryId: string;
 }

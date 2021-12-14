@@ -80,8 +80,8 @@ export class GoogleLogin {
       throw new HttpException(
         error.response
           ? error.response
-          : `Error in processing user registration`,
-        error.status ? error.status : 422,
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
       );
     }
   }

@@ -20,10 +20,14 @@ export class GadgetsService {
 
     @InjectRepository(GadgetPhoto)
     private photoRepository: Repository<GadgetPhoto>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   /**
    * List gadget service method
+   * This method creates a new gadget
    * @param createGadgetDto
    * @param photoDtoArray
    * @param user
@@ -62,10 +66,12 @@ export class GadgetsService {
 
       gadget = await this.gadgetRepository.save(gadget);
 
-      photoDtoArray.forEach(async (photoDto) => {
-        let photo: GadgetPhoto = this.photoRepository.create(photoDto);
+      photoDtoArray.forEach(async (photoDto, index) => {
+        if (index == 0) photoDto.cover = true; // set the first photo as cover photo
+
+        const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
-        photo = await this.photoRepository.save(photo);
+        await this.photoRepository.save(photo);
       });
 
       return {
@@ -74,18 +80,78 @@ export class GadgetsService {
       };
     } catch (error) {
       throw new HttpException(
-        error.response ? error.response : `Error in processing gadget listing`,
-        error.status ? error.status : 422,
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
       );
     }
   }
 
-  findAll() {
-    return `This action returns all gadgets`;
+  /**
+   * Find gadgets service method
+   * This methods finds all gadgets that belong to a user
+   * @param user
+   * @returns
+   * @todo Use join clause to load cover photos
+   */
+  public async findAll(user: User) {
+    try {
+      if (!(await this.userRepository.findOne(user.id)))
+        throw new HttpException('user does not exist', HttpStatus.BAD_REQUEST);
+
+      const gadgets: Gadget[] = await this.gadgetRepository.find({
+        // loadRelationIds: true,
+        where: {
+          user,
+        },
+      }); // find all gadgets that belong to a user
+
+      return {
+        success: true,
+        gadgets,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
+      );
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} gadget`;
+  /**
+   * Find a single gadget service method
+   * @param id unique id of the gadget
+   * @param user
+   * @returns
+   * @todo Use join clause to load cover photo
+   */
+  public async findOne(id: string, user: User) {
+    try {
+      const gadget: Gadget = await this.gadgetRepository.findOne({
+        where: {
+          id,
+          user,
+        },
+      });
+
+      if (!gadget)
+        throw new HttpException('gadget does not exist', HttpStatus.NOT_FOUND);
+
+      return {
+        success: true,
+        gadget,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
+      );
+    }
   }
 
   update(id: number, updateGadgetDto: UpdateGadgetDto) {
@@ -95,8 +161,4 @@ export class GadgetsService {
   remove(id: number) {
     return `This action removes a #${id} gadget`;
   }
-
-  // private convertTo2dp(value: number): number {
-  //   return Number(Number.parseFloat(String(value)).toFixed(2));
-  // }
 }

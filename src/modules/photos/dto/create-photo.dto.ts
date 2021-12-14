@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsString } from 'class-validator';
 
 /**
  * Represents the form that a Gadget Photo request data takes. Does not map
@@ -27,4 +27,7 @@ export class CreatePhotoDto {
 
   @IsInt()
   size: number;
+
+  @IsBoolean()
+  cover: boolean;
 }

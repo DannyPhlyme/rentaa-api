@@ -3,6 +3,7 @@ import { BaseEntity } from '../base';
 import { Category } from './category';
 import { GadgetPhoto } from './gadget-photo';
 import { User } from '../auth/user';
+import { GadgetCondition, GadgetStatus } from '../enum';
 
 /**
  * Declares the Gadget entity class
@@ -35,11 +36,25 @@ export class Gadget extends BaseEntity {
   description: string;
 
   @Column({
+    type: 'enum',
+    enum: GadgetStatus,
+    default: GadgetStatus.UNAVAILABLE,
+  })
+  status: string;
+
+  @Column({
     type: 'numeric',
     precision: 8,
     scale: 2,
   })
   price: number;
+
+  @Column({
+    type: 'enum',
+    enum: GadgetCondition,
+    default: GadgetCondition.UNVERIFIED,
+  })
+  condition: string;
 
   @Column({
     type: 'varchar',

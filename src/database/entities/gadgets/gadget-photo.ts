@@ -54,4 +54,16 @@ export class GadgetPhoto extends BaseEntity {
     precision: 65, // pending for change
   })
   size: number;
+
+  @Column({
+    type: 'bool',
+    default: false,
+  })
+  cover: boolean;
+
+  // @Column()
+  // url: string;
+
+  // @Column()
+  // key: string;
 }

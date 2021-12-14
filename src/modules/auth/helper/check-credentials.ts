@@ -62,8 +62,10 @@ export class CheckCredential {
       };
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : `something went wrong`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

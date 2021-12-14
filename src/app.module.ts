@@ -29,6 +29,7 @@ import { UserModule } from './modules/users/user.module';
       entities: ['dist/database/entities/*/*{.ts,.js}'],
       migrations: ['migrations/*{.ts,.js}'],
       synchronize: true,
+      // logging: true,
     }),
   ],
   controllers: [AppController],
