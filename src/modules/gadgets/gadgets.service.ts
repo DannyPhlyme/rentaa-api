@@ -8,6 +8,8 @@ import { Category } from '../../database/entities/gadgets/category';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
 import { User } from '../../database/entities/auth/user';
+import { S3 } from 'aws-sdk';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class GadgetsService {
@@ -69,6 +71,14 @@ export class GadgetsService {
       photoDtoArray.forEach(async (photoDto, index) => {
         if (index == 0) photoDto.cover = true; // set the first photo as cover photo
 
+        const result = this.uploadFileToS3(
+          photoDto.buffer,
+          photoDto.originalname,
+        ); // upload photo to S3
+
+        photoDto.key = (await result).Key;
+        photoDto.url = (await result).Location;
+
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
         await this.photoRepository.save(photo);
@@ -90,7 +100,7 @@ export class GadgetsService {
 
   /**
    * Find gadgets service method
-   * This methods finds all gadgets that belong to a user
+   * This method finds all gadgets that belong to a user
    * @param user
    * @returns
    * @todo Use join clause to load cover photos
@@ -160,5 +170,25 @@ export class GadgetsService {
 
   remove(id: number) {
     return `This action removes a #${id} gadget`;
+  }
+
+  /**
+   * Utility method to upload photo to Amazon S3
+   * @param dataBuffer
+   * @param filename
+   * @returns
+   */
+  private async uploadFileToS3(
+    dataBuffer: Buffer,
+    filename: string,
+  ): Promise<S3.ManagedUpload.SendData> {
+    const s3 = new S3();
+    return await s3
+      .upload({
+        Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
+        Body: dataBuffer,
+        Key: `${uuid()}-${filename}`,
+      })
+      .promise();
   }
 }

@@ -32,24 +32,6 @@ export class GadgetPhoto extends BaseEntity {
   mimetype: string;
 
   @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  destination: string;
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  filename: string;
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  path: string;
-
-  @Column({
     type: 'numeric',
     precision: 65, // pending for change
   })
@@ -61,9 +43,9 @@ export class GadgetPhoto extends BaseEntity {
   })
   cover: boolean;
 
-  // @Column()
-  // url: string;
+  @Column()
+  url: string;
 
-  // @Column()
-  // key: string;
+  @Column()
+  key: string;
 }

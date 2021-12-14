@@ -47,8 +47,8 @@ export class GadgetsController {
 
     const photoDtoArray: Array<CreatePhotoDto> = []; // empty photoDto array
     photos.forEach((photo) => {
-      const obj = { cover: false };
-      photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties and push to photoDto array
+      const obj = { cover: false, url: null, key: null };
+      photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties to new object and push to photoDto array
     });
 
     // console.log(photos); // print photos to console
@@ -113,7 +113,7 @@ export class GadgetsController {
     const photoDtoArray: Array<CreatePhotoDto> = [];
 
     photos.forEach((photo) => {
-      const obj = { cover: false };
+      const obj = { cover: false, url: null, key: null };
       photoDtoArray.push(Object.assign(obj, photo));
     });
     console.log(photoDtoArray);
