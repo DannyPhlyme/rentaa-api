@@ -94,32 +94,6 @@ export class GadgetsController {
   }
 
   /**
-   * Test endpoint for uploading a single photo
-   * @param photo upload single photo
-   */
-  @Post('/upload/photo')
-  @UseInterceptors(FileInterceptor('photo', multerOptions))
-  async uploadFile(@UploadedFile() photo: Express.Multer.File) {
-    console.log(photo);
-  }
-
-  /**
-   * Test endpoint for uploading multiple photos
-   * @param photos upload multiple photos
-   */
-  @Post('/upload/photos')
-  @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
-  async uploadFiles(@UploadedFiles() photos: Array<Express.Multer.File>) {
-    const photoDtoArray: Array<CreatePhotoDto> = [];
-
-    photos.forEach((photo) => {
-      const obj = { cover: false, url: null, key: null };
-      photoDtoArray.push(Object.assign(obj, photo));
-    });
-    console.log(photoDtoArray);
-  }
-
-  /**
    * Utility method
    * @param ms number in millisecond
    * @returns
