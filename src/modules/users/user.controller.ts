@@ -3,10 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Put,
   Param,
   Request,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user';
@@ -37,7 +37,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('/update-profile')
+  @Patch('/update-profile')
   updateProfile(@Body() payload: UpdateUserDto, @Request() request: any) {
     return this.userService.updateUser(payload, request.user);
   }

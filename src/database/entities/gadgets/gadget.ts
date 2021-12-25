@@ -3,7 +3,7 @@ import { BaseEntity } from '../base';
 import { Category } from './category';
 import { GadgetPhoto } from './gadget-photo';
 import { User } from '../auth/user';
-import { GadgetCondition, GadgetStatus } from '../enum';
+import { GadgetCondition } from '../enum';
 
 /**
  * Declares the Gadget entity class
@@ -32,27 +32,21 @@ export class Gadget extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true,
   })
   description: string;
-
-  @Column({
-    type: 'enum',
-    enum: GadgetStatus,
-    default: GadgetStatus.UNAVAILABLE,
-  })
-  status: string;
 
   @Column({
     type: 'numeric',
     precision: 8,
     scale: 2,
+    nullable: true,
   })
   price: number;
 
   @Column({
     type: 'enum',
     enum: GadgetCondition,
-    default: GadgetCondition.UNVERIFIED,
   })
   condition: string;
 
@@ -60,10 +54,17 @@ export class Gadget extends BaseEntity {
     type: 'varchar',
     length: 255,
   })
-  address: string;
+  state: string;
 
   @Column({
-    type: 'timestamp',
+    type: 'varchar',
+    length: 255,
   })
-  pickup_date: Date;
+  lga: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
+  contact_info: string;
 }

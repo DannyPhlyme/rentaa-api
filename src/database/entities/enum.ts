@@ -11,8 +11,8 @@ enum TokenReason {
 }
 
 enum GadgetCondition {
-  VERIFIED = 'verified',
-  UNVERIFIED = 'unverified',
+  BRAND_NEW = 'new',
+  FAIRLY_USED = 'used',
 }
 
 enum GadgetStatus {

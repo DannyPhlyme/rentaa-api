@@ -1,5 +1,14 @@
-import { IsDateString, IsString, IsUUID, Length } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { GadgetCondition } from 'src/database/entities/enum';
 import { IsValidPrice } from '../../../validators/is-valid-price.validator';
+import { IsValidPhoneNumber } from '../../../validators/is-valid-phone-number';
 
 /**
  * Represents the form that Gadget request data takes. Does not map
@@ -8,25 +17,42 @@ import { IsValidPrice } from '../../../validators/is-valid-price.validator';
  * @class
  */
 export class CreateGadgetDto {
-  @IsString()
-  @Length(3, 100, { message: 'name should not be less than 3 chars' })
+  @MinLength(3, {
+    message: 'Please provide a valid name',
+  })
   name: string;
 
-  @IsString()
-  @Length(10, 200)
-  description: string;
-
-  @IsValidPrice()
-  price: string;
-
-  @IsString()
-  @Length(3, 100)
-  address: string;
-
-  @IsDateString({
-    strict: false,
+  @MaxLength(250, {
+    message: 'Description has to be a maximum length of 250 characters',
   })
-  pickup_date: Date;
+  @IsOptional()
+  description?: string;
+
+  @IsEnum(GadgetCondition, {
+    message: 'Please provide a valid condition',
+  })
+  condition: GadgetCondition;
+
+  @IsValidPrice({
+    message: 'Please provide a valid price',
+  })
+  @IsOptional()
+  price?: string;
+
+  @IsString({
+    message: 'Please provide valid state',
+  })
+  state: string;
+
+  @IsString({
+    message: 'Please provide a valid local government area',
+  })
+  lga: string;
+
+  @IsValidPhoneNumber({
+    message: 'Please provide a vallid phone number',
+  })
+  contact_info: string;
 
   @IsUUID('all', {
     message: 'please provide a valid category',

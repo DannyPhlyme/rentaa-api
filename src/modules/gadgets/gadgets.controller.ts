@@ -1,20 +1,22 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   Request,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/config';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
 import { CreateGadgetDto } from './dto/create-gadget.dto';
@@ -22,6 +24,7 @@ import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { GadgetsService } from './gadgets.service';
 import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { User } from 'src/database/entities/auth/user';
+import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 
 @Controller('gadgets')
 export class GadgetsController {
@@ -43,11 +46,11 @@ export class GadgetsController {
     @Request() request,
   ) {
     if (photos.length == 0)
-      throw new HttpException('no photo uploaded', HttpStatus.BAD_REQUEST);
+      throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
 
     const photoDtoArray: Array<CreatePhotoDto> = []; // empty photoDto array
     photos.forEach((photo) => {
-      const obj = { cover: false, url: null, key: null };
+      const obj = { cover: false, bucketname: null, key: null };
       photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties to new object and push to photoDto array
     });
 
@@ -67,8 +70,18 @@ export class GadgetsController {
    */
   @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll(@Request() request) {
-    return await this.gadgetsService.findAll(<User>request.user);
+  async findAll(
+    @Request() request,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+  ) {
+    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    return this.gadgetsService.findAll(<User>request.user, {
+      limit,
+      page,
+      paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
+      route: 'http://localhost:3000/api/v1/gadgets',
+    });
   }
 
   /**
@@ -91,32 +104,6 @@ export class GadgetsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.gadgetsService.remove(+id);
-  }
-
-  /**
-   * Test endpoint for uploading a single photo
-   * @param photo upload single photo
-   */
-  @Post('/upload/photo')
-  @UseInterceptors(FileInterceptor('photo', multerOptions))
-  async uploadFile(@UploadedFile() photo: Express.Multer.File) {
-    console.log(photo);
-  }
-
-  /**
-   * Test endpoint for uploading multiple photos
-   * @param photos upload multiple photos
-   */
-  @Post('/upload/photos')
-  @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
-  async uploadFiles(@UploadedFiles() photos: Array<Express.Multer.File>) {
-    const photoDtoArray: Array<CreatePhotoDto> = [];
-
-    photos.forEach((photo) => {
-      const obj = { cover: false, url: null, key: null };
-      photoDtoArray.push(Object.assign(obj, photo));
-    });
-    console.log(photoDtoArray);
   }
 
   /**

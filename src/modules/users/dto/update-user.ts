@@ -1,19 +1,55 @@
-import { MinLength } from 'class-validator';
+import { OmitType, PartialType } from '@nestjs/mapped-types';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  Length,
+  MaxLength,
+} from 'class-validator';
+import { RegisterDto } from '../../auth/dto/register';
 
-export class UpdateUserDto {
-  @MinLength(3, {
-    message: '',
+export class UpdateUserDto extends PartialType(
+  OmitType(RegisterDto, ['email', 'password'] as const),
+) {
+  @MaxLength(200, {
+    message: 'Address has to be a maximum length of 200 characters',
   })
-  first_name: string;
+  @IsOptional()
+  address?: string;
 
-  @MinLength(3, {
-    message: '',
+  @IsString({
+    message: 'Please provide a valid local government area',
   })
-  last_name: string;
+  @IsOptional()
+  lga?: string;
 
-  address: string;
+  @Length(10, 200, {
+    message: 'Description has to be a minimum of 10 characters',
+  })
+  @IsOptional()
+  description?: string;
 
-  lga: string;
+  @IsUrl(
+    {
+      allow_underscores: true,
+      protocols: ['https'],
+    },
+    {
+      message: 'Please provide a valid twitter handle',
+    },
+  )
+  @IsOptional()
+  twitter?: string;
 
-  description: string;
+  @IsUrl(
+    {
+      allow_underscores: true,
+      protocols: ['https'],
+    },
+    {
+      message: 'Please provide a valid instagram handle',
+    },
+  )
+  @IsOptional()
+  instagram?: string;
 }

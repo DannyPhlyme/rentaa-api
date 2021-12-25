@@ -17,6 +17,12 @@ export class Profile extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 255,
+  })
+  phone_number: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
     nullable: true,
   })
   address: string;

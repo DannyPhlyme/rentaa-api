@@ -16,6 +16,7 @@ import { JwtStrategy } from '../auth/helper/jwt-strategy';
 import { PassportModule } from '@nestjs/passport';
 import { Auth } from '../auth/helper/auth';
 import { Formatter } from '../../utilities/formatter';
+import { SocialHandle } from '../../database/entities/auth/social-handle';
 
 @Module({
   controllers: [UserController],
@@ -25,7 +26,14 @@ import { Formatter } from '../../utilities/formatter';
       secret: process.env.SECRET_KEY,
       signOptions: { expiresIn: '1d' },
     }),
-    TypeOrmModule.forFeature([User, Token, Password, LoginHistory, Profile]),
+    TypeOrmModule.forFeature([
+      User,
+      Token,
+      Password,
+      LoginHistory,
+      Profile,
+      SocialHandle,
+    ]),
   ],
   providers: [
     JwtStrategy,

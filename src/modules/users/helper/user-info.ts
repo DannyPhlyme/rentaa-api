@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { UpdateUserDto } from '../dto/update-user';
 import { Profile } from 'src/database/entities/auth/profile';
+import { SocialHandle } from '../../../database/entities/auth/social-handle';
 
 @Injectable()
 export class UserInfo {
@@ -13,6 +14,9 @@ export class UserInfo {
 
     @InjectRepository(Profile)
     private profileRepo: Repository<Profile>,
+
+    @InjectRepository(SocialHandle)
+    private socialHandleRepo: Repository<SocialHandle>,
   ) {}
 
   public async findUsers() {
@@ -63,17 +67,23 @@ export class UserInfo {
 
   public async getProfile(user: any) {
     try {
-      const userProfile = await this.profileRepo.findOne({
+      const profile = await this.profileRepo.findOne({
         where: {
           user: user.id,
         },
       });
 
-      if (!userProfile) {
+      if (!profile) {
         throw new HttpException(`User Profile Not Found`, HttpStatus.NOT_FOUND);
       }
 
-      return { userProfile };
+      const socialHandle: SocialHandle = await this.socialHandleRepo.findOne({
+        where: {
+          profile,
+        },
+      });
+
+      return { profile, socialHandle };
     } catch (e) {
       throw new HttpException(
         e.response
@@ -85,8 +95,18 @@ export class UserInfo {
   }
 
   public async updateUser(payload: UpdateUserDto, user: any) {
+    const {
+      first_name,
+      last_name,
+      phone_number,
+      address,
+      description,
+      lga,
+      instagram,
+      twitter,
+    } = payload;
     try {
-      const getUser = await this.userRepo.findOne({
+      let getUser = await this.userRepo.findOne({
         where: {
           id: user.id,
         },
@@ -96,27 +116,31 @@ export class UserInfo {
         throw new HttpException(`User Not Found`, HttpStatus.NOT_FOUND);
       }
 
-      getUser.first_name = payload.first_name;
-      getUser.last_name = payload.last_name;
-
-      const profile = await this.profileRepo.findOne({ user: getUser });
+      getUser.first_name = first_name;
+      getUser.last_name = last_name;
+      let profile = await this.profileRepo.findOne({ user: getUser });
 
       if (!profile) {
         throw new HttpException(`Profile Does Not Exist`, HttpStatus.NOT_FOUND);
       }
 
-      profile.lga = payload.lga;
-      profile.address = payload.address;
-      profile.description = payload.description;
+      profile.phone_number = phone_number;
+      profile.lga = lga;
+      profile.address = address;
+      profile.description = description;
       profile.user = getUser;
+      let social_handle = await this.socialHandleRepo.findOne({ profile });
 
-      //fire an Event
-      await this.userRepo.save(getUser);
+      social_handle.twitter = twitter;
+      social_handle.instagram = instagram;
 
-      await this.profileRepo.save(profile);
+      getUser = await this.userRepo.save(getUser);
+      profile = await this.profileRepo.save(profile);
+      social_handle = await this.socialHandleRepo.save(social_handle);
 
       return {
-        results: { profile },
+        sucess: true,
+        message: `You've successfully updated your profile`,
       };
     } catch (e) {
       throw new HttpException(

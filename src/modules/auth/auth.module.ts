@@ -26,6 +26,7 @@ import { CheckCredential } from './helper/check-credentials';
 import { GoogleStrategy } from './helper/google.strategy';
 import { GoogleLogin } from './helper/google-login';
 import { EmailService } from 'src/utilities/email.service';
+import { SocialHandle } from '../../database/entities/auth/social-handle';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EmailService } from 'src/utilities/email.service';
       LoginHistory,
       Profile,
       ProfileGallery,
+      SocialHandle,
     ]),
   ],
   providers: [

@@ -10,6 +10,7 @@ import { Password } from 'src/database/entities/auth/password';
 import { TokenReason, emailTemplate } from 'src/database/entities/enum';
 import { Profile } from 'src/database/entities/auth/profile';
 import { EmailService } from 'src/utilities/email.service';
+import { SocialHandle } from '../../../database/entities/auth/social-handle';
 
 @Injectable()
 export class Registration {
@@ -26,6 +27,9 @@ export class Registration {
     @InjectRepository(Profile)
     private profileRepo: Repository<Profile>,
 
+    @InjectRepository(SocialHandle)
+    private socilaHandleRepo: Repository<SocialHandle>,
+
     private emailService: EmailService,
 
     private authUtil: Auth,
@@ -33,7 +37,8 @@ export class Registration {
 
   public async register(registerDto: RegisterDto) {
     try {
-      const { first_name, email, password, last_name, phone } = registerDto;
+      const { first_name, email, password, last_name, phone_number } =
+        registerDto;
 
       const getUser = await this.userRepo.findOne({
         where: {
@@ -49,16 +54,22 @@ export class Registration {
         email,
         last_name,
         first_name,
-        phone,
       });
 
       newUser = await this.userRepo.save(newUser);
 
       const profile: Profile = this.profileRepo.create({
+        phone_number,
         user: newUser,
       });
 
       await this.profileRepo.save(profile);
+
+      const socialHandle: SocialHandle = this.socilaHandleRepo.create({
+        profile,
+      });
+
+      await this.socilaHandleRepo.save(socialHandle);
 
       const userPassword: Password = this.passwordRepo.create({
         user: newUser,

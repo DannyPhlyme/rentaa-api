@@ -17,7 +17,7 @@ export class CreatePhotoDto {
 
   cover: boolean;
 
-  url: string;
+  bucketname: string;
 
   key: string;
 }

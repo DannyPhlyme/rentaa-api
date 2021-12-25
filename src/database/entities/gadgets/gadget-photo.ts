@@ -44,7 +44,7 @@ export class GadgetPhoto extends BaseEntity {
   cover: boolean;
 
   @Column()
-  url: string;
+  bucketname: string;
 
   @Column()
   key: string;

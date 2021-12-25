@@ -1,30 +1,32 @@
-import { MinLength, IsEmail, IsString } from 'class-validator';
-// import { ToPhone } from 'src/phone.pipe';
+import { MinLength, IsEmail } from 'class-validator';
+import { IsValidPhoneNumber } from 'src/validators/is-valid-phone-number';
 
 export class RegisterDto {
   @MinLength(3, {
-    message: 'first_name should not be less than 3',
+    message: 'Please provide a valid first name',
   })
   first_name: string;
 
   @MinLength(3, {
-    message: 'last_name should not be less than 3',
+    message: 'Please provide a valid last name',
   })
   last_name: string;
 
-  @IsEmail({}, { message: 'Invalid email address' })
+  @IsEmail(
+    {},
+    {
+      message: 'Please provide a valid email address',
+    },
+  )
   email: string;
 
   @MinLength(8, {
-    message: 'password should not be lesser than 8 chars',
+    message: 'Password has to be a minimum of 8 characters',
   })
   password: string;
 
-  /**
-   * @todo
-   * Fix 1: Validate phone number using "libphonenumber-js" package
-   * Fix 2: Learn how to use class-validator IsPhoneNumber decorator
-   */
-  @IsString()
-  phone: string;
+  @IsValidPhoneNumber({
+    message: 'Please provide a valid phone number',
+  })
+  phone_number: string;
 }

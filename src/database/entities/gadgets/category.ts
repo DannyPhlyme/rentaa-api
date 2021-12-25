@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base';
-// import { ICategory } from '../../interfaces/category.interface';
 import { Gadget } from './gadget';
 
 /**

@@ -8,8 +8,10 @@ import { Category } from '../../database/entities/gadgets/category';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
 import { User } from '../../database/entities/auth/user';
-import { S3 } from 'aws-sdk';
 import { v4 as uuid } from 'uuid';
+import { s3Client } from 'src/providers/aws/clients/S3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class GadgetsService {
@@ -41,8 +43,16 @@ export class GadgetsService {
     user: User,
   ) {
     try {
-      const { name, description, price, address, pickup_date, categoryId } =
-        createGadgetDto;
+      const {
+        name,
+        description,
+        condition,
+        price,
+        state,
+        lga,
+        contact_info,
+        categoryId,
+      } = createGadgetDto;
 
       const category: Category = await this.categoryRepository.findOne({
         where: {
@@ -59,16 +69,16 @@ export class GadgetsService {
       let gadget: Gadget = this.gadgetRepository.create({
         name,
         description,
+        condition,
         price: Number.parseFloat(price),
-        address,
-        pickup_date,
+        state,
+        lga,
+        contact_info,
         category,
         user,
       });
 
-      gadget = await this.gadgetRepository.save(gadget);
-
-      photoDtoArray.forEach(async (photoDto, index) => {
+      for await (const [index, photoDto] of photoDtoArray.entries()) {
         if (index == 0) photoDto.cover = true; // set the first photo as cover photo
 
         const result = this.uploadFileToS3(
@@ -77,16 +87,17 @@ export class GadgetsService {
         ); // upload photo to S3
 
         photoDto.key = (await result).Key;
-        photoDto.url = (await result).Location;
+        photoDto.bucketname = (await result).Bucket;
+
+        gadget = await this.gadgetRepository.save(gadget);
 
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
         await this.photoRepository.save(photo);
-      });
+      }
 
       return {
-        success: true,
-        gadget,
+        item: gadget,
       };
     } catch (error) {
       throw new HttpException(
@@ -103,24 +114,19 @@ export class GadgetsService {
    * This method finds all gadgets that belong to a user
    * @param user
    * @returns
-   * @todo Use join clause to load cover photos
+   * @todo Paginate gadgets
    */
-  public async findAll(user: User) {
+  public async findAll(user: User, options: IPaginationOptions) {
     try {
       if (!(await this.userRepository.findOne(user.id)))
-        throw new HttpException('user does not exist', HttpStatus.BAD_REQUEST);
+        throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST);
 
-      const gadgets: Gadget[] = await this.gadgetRepository.find({
-        // loadRelationIds: true,
+      return paginate(this.gadgetRepository, options, {
+        relations: ['photos'], // load related photo entity
         where: {
           user,
         },
-      }); // find all gadgets that belong to a user
-
-      return {
-        success: true,
-        gadgets,
-      };
+      });
     } catch (error) {
       throw new HttpException(
         error.response
@@ -141,6 +147,7 @@ export class GadgetsService {
   public async findOne(id: string, user: User) {
     try {
       const gadget: Gadget = await this.gadgetRepository.findOne({
+        relations: ['photos', 'category', 'user'],
         where: {
           id,
           user,
@@ -148,11 +155,10 @@ export class GadgetsService {
       });
 
       if (!gadget)
-        throw new HttpException('gadget does not exist', HttpStatus.NOT_FOUND);
+        throw new HttpException('Gadget does not exist', HttpStatus.NOT_FOUND);
 
       return {
-        success: true,
-        gadget,
+        item: gadget,
       };
     } catch (error) {
       throw new HttpException(
@@ -181,14 +187,22 @@ export class GadgetsService {
   private async uploadFileToS3(
     dataBuffer: Buffer,
     filename: string,
-  ): Promise<S3.ManagedUpload.SendData> {
-    const s3 = new S3();
-    return await s3
-      .upload({
-        Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-        Body: dataBuffer,
-        Key: `${uuid()}-${filename}`,
-      })
-      .promise();
+  ): Promise<{ Key: string; Bucket: string }> {
+    const objectParams = {
+      Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
+      Key: `GadgetPhotos/${uuid()}-${filename}`,
+      Body: dataBuffer,
+    };
+
+    try {
+      const data = await s3Client.send(new PutObjectCommand(objectParams));
+      console.log('Success', data);
+      return {
+        Key: objectParams.Key,
+        Bucket: objectParams.Bucket,
+      };
+    } catch (error) {
+      throw new Error('An error occured');
+    }
   }
 }
