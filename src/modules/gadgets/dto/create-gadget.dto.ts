@@ -9,6 +9,7 @@ import {
 import { GadgetCondition } from 'src/database/entities/enum';
 import { IsValidPrice } from '../../../validators/is-valid-price.validator';
 import { IsValidPhoneNumber } from '../../../validators/is-valid-phone-number';
+import { Category } from 'src/database/entities/gadgets/category';
 
 /**
  * Represents the form that Gadget request data takes. Does not map
@@ -58,4 +59,8 @@ export class CreateGadgetDto {
     message: 'please provide a valid category',
   })
   categoryId: string;
+}
+
+export class AdditionalGadgetInfo {
+  category?: Category;
 }
