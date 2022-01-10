@@ -8,12 +8,14 @@ import { GadgetsModule } from './modules/gadgets/gadgets.module';
 import { ValidationPipe } from './validation.pipe';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/users/user.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
     GadgetsModule,
+    CategoriesModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -29,7 +31,7 @@ import { UserModule } from './modules/users/user.module';
       entities: ['dist/database/entities/*/*{.ts,.js}'],
       migrations: ['migrations/*{.ts,.js}'],
       synchronize: true,
-      // logging: ['error'],
+      logging: ['error'],
     }),
   ],
   controllers: [AppController],

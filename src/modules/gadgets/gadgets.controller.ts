@@ -7,6 +7,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseBoolPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -16,7 +17,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/config';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
 import { CreateGadgetDto } from './dto/create-gadget.dto';
@@ -74,6 +75,7 @@ export class GadgetsController {
    * @param request
    * @param page
    * @param limit
+   * @param cover filter by cover photo
    * @returns
    */
   @UseGuards(JwtAuthGuard)
@@ -82,14 +84,19 @@ export class GadgetsController {
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('cover', new DefaultValuePipe(false), ParseBoolPipe) cover,
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
-    return this.gadgetsService.findAll(<User>request.user, {
-      limit,
-      page,
-      paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
-      route: 'http://localhost:3000/api/v1/gadgets',
-    });
+    return await this.gadgetsService.findAll(
+      <User>request.user,
+      {
+        limit,
+        page,
+        paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
+        route: 'http://localhost:3000/api/v1/gadgets',
+      },
+      cover,
+    );
   }
 
   /**
@@ -115,12 +122,18 @@ export class GadgetsController {
    */
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('photo', multerOptions))
   async update(
     @Param('id') id: string,
     @Request() request,
     @Body() updateGadgetDto: UpdateGadgetDto,
   ) {
-    return this.gadgetsService.update(id, <User>request.user, updateGadgetDto);
+    updateGadgetDto = JSON.parse(JSON.stringify(updateGadgetDto)); // parse the request body
+    return await this.gadgetsService.update(
+      id,
+      <User>request.user,
+      updateGadgetDto,
+    );
   }
 
   /**
@@ -133,11 +146,12 @@ export class GadgetsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string, @Request() request) {
-    return this.gadgetsService.remove(id, <User>request.user);
+    return await this.gadgetsService.remove(id, <User>request.user);
   }
 
   /**
    * Restore gadget controller method
+   *
    * @param id umique id of the gadget
    * @param request
    * @returns
@@ -145,8 +159,9 @@ export class GadgetsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id/restore')
   async restore(@Param('id') id: string, @Request() request) {
-    return this.gadgetsService.restore(id, <User>request.user);
+    return await this.gadgetsService.restore(id, <User>request.user);
   }
+
   /**
    * Utility method
    *

@@ -1,18 +1,17 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
-import { ProfileGallery } from './profile-gallery';
+import { Entity, Column, JoinColumn, OneToOne } from 'typeorm';
+import { Avatar } from './avatar';
 import { BaseEntity } from '../base';
-import { User } from './user';
 
 @Entity({
   name: 'profiles',
 })
 export class Profile extends BaseEntity {
-  @OneToMany(() => ProfileGallery, (gallery) => gallery.profile)
-  galleries: ProfileGallery[];
+  // @OneToOne(() => Avatar)
+  // @JoinColumn({ name: 'avatarId', referencedColumnName: 'id' })
+  // avatar: Avatar;
 
-  @OneToOne(() => User)
-  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-  user: User;
+  // @Column({ nullable: true })
+  // avatarId?: string; // id of the avatar. this increases performance
 
   @Column({
     type: 'varchar',
@@ -25,7 +24,7 @@ export class Profile extends BaseEntity {
     length: 255,
     nullable: true,
   })
-  address: string;
+  state: string;
 
   @Column({
     type: 'varchar',
@@ -40,4 +39,18 @@ export class Profile extends BaseEntity {
     nullable: true,
   })
   description: string; // describe yourself
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  twitter: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  instagram: string;
 }

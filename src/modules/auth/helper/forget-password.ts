@@ -6,7 +6,7 @@ import { Token } from 'src/database/entities/auth/token';
 import { emailTemplate, TokenReason } from 'src/database/entities/enum';
 import { Auth } from './auth';
 import { Formatter } from '../../../utilities/formatter';
-import { ForgotPasswordDto } from 'src/modules/users/dto/change-password';
+import { ForgotPasswordDto } from 'src/modules/users/dto/update-password';
 import { EmailService } from 'src/utilities/email.service';
 
 @Injectable()

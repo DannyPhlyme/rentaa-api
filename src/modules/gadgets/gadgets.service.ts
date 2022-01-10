@@ -110,24 +110,41 @@ export class GadgetsService {
   }
 
   /**
-   * Find gadgets service method. This method finds all gadgets that belong to a user
-   
+   * Find gadgets service method. This method finds all gadgets that
+   * belong to a user
+   *
    * @param user
+   * @param options
+   * @param cover filter by cover photo
    * @returns
    */
-  public async findAll(user: User, options: IPaginationOptions) {
+  public async findAll(
+    user: User,
+    options: IPaginationOptions,
+    cover: boolean,
+  ) {
     try {
       user = await this.userRepository.findOne(user.id);
 
       if (!user)
         throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST);
 
-      return paginate(this.gadgetRepository, options, {
-        relations: ['photos', 'category'], // load related photo entity
-        where: {
-          user,
-        },
-      });
+      if (cover)
+        return paginate(
+          this.gadgetRepository
+            .createQueryBuilder('gadgets')
+            .leftJoinAndSelect('gadgets.photos', 'photo')
+            .where('gadgets.userId = :user', { user: user.id })
+            .andWhere('photo.cover = :cover', { cover: true }), // load cover photos only
+          options,
+        );
+      else
+        return paginate(this.gadgetRepository, options, {
+          relations: ['photos', 'category'], // load related photo entity
+          where: {
+            user,
+          },
+        });
     } catch (error) {
       throw new HttpException(
         error.response
@@ -178,6 +195,8 @@ export class GadgetsService {
    *
    * @param id unique id of the gadget to be updated
    * @param updateGadgetDto
+   * @todo Fix params error for update method
+   * @todo Users should also be able to update photos of gadgets
    */
   public async update(
     id: string,
@@ -220,7 +239,6 @@ export class GadgetsService {
           user,
         },
       });
-
       return {
         item: gadget,
       };
@@ -254,12 +272,12 @@ export class GadgetsService {
       if (!gadget)
         throw new HttpException('Gadget does not exist', HttpStatus.NOT_FOUND); // check if gadget exists
 
-      await this.gadgetRepository.softDelete({ id, user });
-
       const photos: GadgetPhoto[] = gadget.photos;
+
       for await (const photo of photos) {
-        await this.photoRepository.softDelete(photo.id);
+        await this.photoRepository.softDelete(photo.id); // delete gadget photos
       }
+      await this.gadgetRepository.softDelete({ id, user }); // delete gadget
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -311,7 +329,6 @@ export class GadgetsService {
       for await (const photo of photos) {
         await this.photoRepository.restore(photo.id); // restore gadget photos
       }
-
       await this.gadgetRepository.restore({ id, user }); // restore gadget
 
       gadget = await this.gadgetRepository.findOne({

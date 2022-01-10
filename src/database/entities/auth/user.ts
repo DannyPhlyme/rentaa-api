@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { LoginHistory } from './login-history';
 import { Status } from '../enum';
 import { Password } from './password';
@@ -6,11 +6,16 @@ import { Token } from './token';
 import { ActivityLog } from './activity-logs';
 import { BaseEntity } from '../base';
 import { Gadget } from '../gadgets/gadget';
+import { Profile } from './profile';
 
 @Entity({
   name: 'users',
 })
 export class User extends BaseEntity {
+  @OneToOne(() => Profile)
+  @JoinColumn({ name: 'profileId', referencedColumnName: 'id' })
+  profile: Profile;
+
   @OneToMany(() => LoginHistory, (history) => history.user, {
     cascade: ['insert'],
   })
