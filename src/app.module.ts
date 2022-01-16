@@ -9,6 +9,7 @@ import { ValidationPipe } from './validation.pipe';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/users/user.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
       synchronize: true,
       logging: ['error'],
     }),
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [

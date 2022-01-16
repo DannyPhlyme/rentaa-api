@@ -50,15 +50,16 @@ export class Registration {
         throw new HttpException('Email already Exists', HttpStatus.BAD_REQUEST);
       }
 
+      let avatar: Avatar = this.avatarRepo.create({});
+
+      avatar = await this.avatarRepo.save(avatar);
+
       const profile: Profile = this.profileRepo.create({
         phone_number,
+        avatarId: avatar.id,
       });
 
       await this.profileRepo.save(profile);
-
-      // const avatar: Avatar = this.avatarRepo.create({ profile });
-
-      // await this.avatarRepo.save(avatar);
 
       let newUser: User = this.userRepo.create({
         email,

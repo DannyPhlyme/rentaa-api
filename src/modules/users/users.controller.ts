@@ -12,6 +12,8 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './user.service';
 import { UpdateUserDto } from './dto/update-user';
@@ -98,13 +100,15 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
     @Request() request: any,
   ) {
-    // const avatarDto = { avatar };
+    if (!file)
+      throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
 
     updateUserDto = JSON.parse(JSON.stringify(updateUserDto)); // parse the request body
     return await this.usersService.update(
       id,
       updateUserDto,
       file.buffer,
+      file.originalname,
       <User>request.user,
     );
   }

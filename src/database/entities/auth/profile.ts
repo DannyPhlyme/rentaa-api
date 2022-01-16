@@ -1,17 +1,23 @@
-import { Entity, Column, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, OneToOne, OneToMany } from 'typeorm';
 import { Avatar } from './avatar';
 import { BaseEntity } from '../base';
+import { Review } from '../reviews/review';
 
 @Entity({
   name: 'profiles',
 })
 export class Profile extends BaseEntity {
-  // @OneToOne(() => Avatar)
-  // @JoinColumn({ name: 'avatarId', referencedColumnName: 'id' })
-  // avatar: Avatar;
+  @OneToOne(() => Avatar)
+  @JoinColumn({ name: 'avatarId', referencedColumnName: 'id' })
+  avatar: Avatar;
 
-  // @Column({ nullable: true })
-  // avatarId?: string; // id of the avatar. this increases performance
+  @OneToMany(() => Review, (review) => review.profile, {
+    onDelete: 'SET NULL', // fallback for delete
+  })
+  reviews: Review[];
+
+  @Column({ nullable: true })
+  avatarId?: string; // id of the avatar. this increases performance
 
   @Column({
     type: 'varchar',

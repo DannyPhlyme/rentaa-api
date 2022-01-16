@@ -1,11 +1,11 @@
 export type AvatarType = {
-  originalname: string;
+  // originalname: string;
 
-  encoding: string;
+  // encoding: string;
 
-  mimetype: string;
+  // mimetype: string;
 
-  size: number;
+  // size: number;
 
   buffer: Buffer;
 };

@@ -162,15 +162,21 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
     dataBuffer: Buffer,
+    originalname: string,
     user: User,
   ) {
     try {
       console.log(updateUserDto);
-
-      // delete updateUserDto.first_name;
-      // delete updateUserDto.last_name;
-
-      updateUserDto = <Profile>updateUserDto;
+      const {
+        first_name,
+        last_name,
+        phone_number,
+        description,
+        instagram,
+        lga,
+        state,
+        twitter,
+      } = updateUserDto;
 
       user = await this.userRepository.findOne({
         relations: ['profile'],
@@ -182,25 +188,37 @@ export class UsersService {
       if (!user)
         throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
 
-      if (!user.profile)
+      let profile: Profile = user.profile;
+
+      if (!profile)
         throw new HttpException('Profile does not exist', HttpStatus.NOT_FOUND);
 
-      console.log(user.profile.id);
+      user.first_name = first_name;
+      user.last_name = last_name;
+      user = await this.userRepository.save(user);
 
-      const data = await this.profileRepository.update(
-        user.profile.id,
-        updateUserDto,
-        // profileDto,
+      let avatar: Avatar = await this.avatarRepository.findOne(
+        profile.avatarId,
       );
+      avatar.originalname = originalname;
+      avatar.data = dataBuffer;
+      avatar = await this.avatarRepository.save(avatar);
 
-      console.log(data);
+      profile.phone_number = phone_number;
+      profile.description = description;
+      profile.instagram = instagram;
+      profile.lga = twitter;
+      profile.lga = lga;
+      profile.state = state;
+      profile.avatarId = avatar.id;
+      profile = await this.profileRepository.save(profile);
 
-      const profile: Profile = await this.profileRepository.findOne(
-        user.profile.id,
-      );
+      user = await this.userRepository.findOne(id, {
+        relations: ['profile'],
+      });
 
       return {
-        item: profile,
+        item: user,
       };
     } catch (error) {
       throw new HttpException(

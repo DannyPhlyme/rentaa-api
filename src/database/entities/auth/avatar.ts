@@ -10,6 +10,12 @@ export class Avatar extends BaseEntity {
   // profile: Profile;
 
   @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  originalname: string;
+
+  @Column({
     type: 'longblob',
     nullable: true,
   })
