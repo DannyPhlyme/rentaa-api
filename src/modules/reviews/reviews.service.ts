@@ -91,7 +91,19 @@ export class ReviewsService {
     }
   }
 
-  public async findAll(user: User, options: IPaginationOptions) {
+  /**
+   * Find reviews service method.
+   *
+   * @param user
+   * @param options
+   * @param revieweeId
+   * @returns
+   */
+  public async findAll(
+    user: User,
+    options: IPaginationOptions,
+    revieweeId?: string | null,
+  ) {
     try {
       if (!user)
         throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST);
@@ -102,10 +114,21 @@ export class ReviewsService {
           id: user.id,
         },
       });
+      let profile: Profile = user.profile;
 
-      const profile: Profile = user.profile;
+      if (!revieweeId)
+        return paginate(this.reviewRepository, options, { where: { profile } });
+      else {
+        user = await this.userRepository.findOne({
+          relations: ['profile'],
+          where: {
+            id: revieweeId,
+          },
+        });
 
-      return paginate(this.reviewRepository, options, { where: { profile } });
+        profile = user.profile;
+        return paginate(this.reviewRepository, options, { where: { profile } });
+      }
     } catch (error) {
       throw new HttpException(
         error.response
@@ -116,6 +139,12 @@ export class ReviewsService {
     }
   }
 
+  /**
+   * Find a single review service method.
+   *
+   * @param id
+   * @returns
+   */
   public async findOne(id: string) {
     try {
       const review: Review = await this.reviewRepository.findOne({
@@ -141,6 +170,13 @@ export class ReviewsService {
     }
   }
 
+  /**
+   * Update a review service mehtod.
+   *
+   * @param id
+   * @param updateReviewDto
+   * @returns
+   */
   public async update(id: string, updateReviewDto: UpdateReviewDto) {
     try {
       let review: Review = await this.reviewRepository.findOne(id);
@@ -170,6 +206,12 @@ export class ReviewsService {
     }
   }
 
+  /**
+   * Delete review service method.
+   *
+   * @param id
+   * @returns
+   */
   public async remove(id: string) {
     try {
       let review: Review = await this.reviewRepository.findOne(id);
@@ -200,6 +242,12 @@ export class ReviewsService {
     }
   }
 
+  /**
+   * Restore review service method.
+   *
+   * @param id
+   * @returns
+   */
   public async restore(id: string) {
     try {
       let review: Review = await this.reviewRepository.findOne({

@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewsService } from './reviews.service';
+import { DEFAULT_UUID } from '../../config/config';
 
 /**
  * The Review controller class. Responsible for handling incoming review
@@ -63,22 +64,37 @@ export class ReviewsController {
    * @param request
    * @param page
    * @param limit
+   * @param revieweeId
    * @returns
    */
   @UseGuards(JwtAuthGuard)
   @Get()
+  // @ApiQuery({
+  //   name: 'reviweeID',
+  //   required: false,
+  // })
   async findAll(
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query(
+      'revieweeID',
+      new DefaultValuePipe(DEFAULT_UUID),
+      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    revieweeId: string,
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
-    return await this.reviewsService.findAll(<User>request.user, {
-      limit,
-      page,
-      paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
-      route: 'http://localhost:3000/api/v1/reviews',
-    });
+    return await this.reviewsService.findAll(
+      <User>request.user,
+      {
+        limit,
+        page,
+        paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
+        route: 'http://localhost:3000/api/v1/reviews',
+      },
+      revieweeId != DEFAULT_UUID ? revieweeId : null,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
