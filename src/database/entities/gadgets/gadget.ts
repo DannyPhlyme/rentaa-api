@@ -3,6 +3,7 @@ import { BaseEntity } from '../base';
 import { Category } from './category';
 import { GadgetPhoto } from './gadget-photo';
 import { User } from '../auth/user';
+import { GadgetCondition } from '../enum';
 
 /**
  * Declares the Gadget entity class
@@ -18,7 +19,7 @@ export class Gadget extends BaseEntity {
   category: Category;
 
   @OneToMany(() => GadgetPhoto, (photo) => photo.gadget, {
-    onDelete: 'SET NULL',
+    onDelete: 'SET NULL', // fallback for delete
   })
   photos: GadgetPhoto[];
 
@@ -31,24 +32,38 @@ export class Gadget extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true,
   })
   description: string;
 
   @Column({
-    type: 'numeric',
-    precision: 8,
-    scale: 2,
+    type: 'varchar',
+    length: 255,
+    nullable: true,
   })
-  price: number;
+  price: string;
+
+  @Column({
+    type: 'enum',
+    enum: GadgetCondition,
+  })
+  condition: string;
 
   @Column({
     type: 'varchar',
     length: 255,
   })
-  address: string;
+  state: string;
 
   @Column({
-    type: 'timestamp',
+    type: 'varchar',
+    length: 255,
   })
-  pickup_date: Date;
+  lga: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
+  contact_info: string;
 }

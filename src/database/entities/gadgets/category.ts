@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base';
-// import { ICategory } from '../../interfaces/category.interface';
 import { Gadget } from './gadget';
 
 /**
@@ -16,12 +15,14 @@ export class Category extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 255,
+    unique: true,
   })
   name: string;
 
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true,
   })
   description: string;
 }

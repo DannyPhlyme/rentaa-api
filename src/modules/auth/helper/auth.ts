@@ -3,7 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  UnprocessableEntityException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -65,9 +65,9 @@ export class Auth {
       }
       await this.generateReferralCode(first_name);
     } catch (e) {
-      throw new UnprocessableEntityException({
-        message: `Error in processing referral code`,
-        statusCode: 422,
+      throw new InternalServerErrorException({
+        message: `This is an unexpected error, please contact support`,
+        statusCode: 500,
       });
     }
   }
@@ -144,8 +144,10 @@ export class Auth {
       };
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : 'Authenticate User Error',
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : 'This is an unexpected error, please contact support',
+        e.status ? e.status : 500,
       );
     }
   }
@@ -166,8 +168,10 @@ export class Auth {
       await this.generateEmailToken();
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : `Something bad went wrong`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

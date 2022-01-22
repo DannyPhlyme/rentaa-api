@@ -1,10 +1,15 @@
 import {
-  IsDateString,
-  IsNotEmpty,
+  IsEnum,
+  IsOptional,
   IsString,
-  Length,
-  ValidateIf,
+  IsUUID,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
+import { GadgetCondition } from 'src/database/entities/enum';
+import { IsValidPrice } from '../../../validators/is-valid-price.validator';
+import { IsValidPhoneNumber } from '../../../validators/is-valid-phone-number';
+import { Category } from 'src/database/entities/gadgets/category';
 
 /**
  * Represents the form that Gadget request data takes. Does not map
@@ -13,34 +18,49 @@ import {
  * @class
  */
 export class CreateGadgetDto {
-  @IsString()
-  @IsNotEmpty({ message: 'name cannot be empty' })
-  @Length(3, 100, { message: 'name should not be less than 3 chars' })
+  @MinLength(3, {
+    message: 'Please provide a valid name',
+  })
   name: string;
 
-  @IsString()
-  @Length(10, 200)
-  description: string;
-
-  /**
-   * @todo will fix this thing later
-   * Fix 1: Use class-transformer's plainToClass and class-validator
-   * to create a decorator that converts the price to a number and
-   * also check fot tests, e.g, check if it is NaN, etc.
-   */
-  // @ValidateIf((v) => Number.isNaN(v))
-  @IsString()
-  price: string;
-
-  @IsString()
-  @Length(3, 100)
-  address: string;
-
-  @IsDateString({
-    strict: false,
+  @MaxLength(250, {
+    message: 'Description has to be a maximum length of 250 characters',
   })
-  pickup_date: Date;
+  @IsOptional()
+  description?: string;
 
-  @IsString()
+  @IsEnum(GadgetCondition, {
+    message: 'Please provide a valid condition',
+  })
+  condition: GadgetCondition;
+
+  @IsValidPrice({
+    message: 'Please provide a valid price',
+  })
+  @IsOptional()
+  price?: string;
+
+  @IsString({
+    message: 'Please provide valid state',
+  })
+  state: string;
+
+  @IsString({
+    message: 'Please provide a valid local government area',
+  })
+  lga: string;
+
+  @IsValidPhoneNumber({
+    message: 'Please provide a vallid phone number',
+  })
+  contact_info: string;
+
+  @IsUUID('all', {
+    message: 'please provide a valid category',
+  })
   categoryId: string;
+}
+
+export class AdditionalGadgetInfo {
+  category?: Category;
 }

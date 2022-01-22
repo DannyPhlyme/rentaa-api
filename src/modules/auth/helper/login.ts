@@ -48,8 +48,10 @@ export class Login {
       };
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : `Error in processing user login`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

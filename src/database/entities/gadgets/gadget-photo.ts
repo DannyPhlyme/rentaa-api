@@ -1,6 +1,5 @@
 import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base';
-// import { ImageType } from '../enum';
 import { Gadget } from './gadget';
 
 /**
@@ -32,26 +31,20 @@ export class GadgetPhoto extends BaseEntity {
   mimetype: string;
 
   @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  destination: string;
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  filename: string;
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  path: string;
-
-  @Column({
     type: 'numeric',
     precision: 65, // pending for change
   })
   size: number;
+
+  @Column({
+    type: 'bool',
+    default: false,
+  })
+  cover: boolean;
+
+  @Column()
+  bucketname: string;
+
+  @Column()
+  key: string;
 }

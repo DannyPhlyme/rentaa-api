@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { LoginHistory } from './login-history';
 import { Status } from '../enum';
 import { Password } from './password';
@@ -6,14 +6,16 @@ import { Token } from './token';
 import { ActivityLog } from './activity-logs';
 import { BaseEntity } from '../base';
 import { Gadget } from '../gadgets/gadget';
+import { Profile } from './profile';
 
-/**
- * @todo See if I can simplify all relationships for the USER entity
- */
 @Entity({
   name: 'users',
 })
 export class User extends BaseEntity {
+  @OneToOne(() => Profile)
+  @JoinColumn({ name: 'profileId', referencedColumnName: 'id' })
+  profile: Profile;
+
   @OneToMany(() => LoginHistory, (history) => history.user, {
     cascade: ['insert'],
   })
@@ -51,12 +53,6 @@ export class User extends BaseEntity {
     unique: true,
   })
   email: string;
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  phone: string;
 
   @Column({
     type: 'enum',
