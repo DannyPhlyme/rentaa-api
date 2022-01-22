@@ -14,6 +14,7 @@ import {
   UploadedFile,
   HttpException,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UsersService } from './user.service';
 import { UpdateUserDto } from './dto/update-user';
@@ -23,7 +24,7 @@ import { ChangeEmailDto } from './dto/update-email';
 import { User } from 'src/database/entities/auth/user';
 import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerOptions } from '../../config/config';
+import { DEFAULT_UUID, multerOptions } from '../../config/config';
 import { AvatarType } from '../../types/avatar.type';
 
 @Controller('users')
@@ -54,34 +55,21 @@ export class UsersController {
   }
 
   /**
-   * Internal View. Needs authentication
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get('/profile')
-  async findProfile(@Request() request) {
-    return await this.usersService.findProfile(<User>request.user);
-  }
-
-  /**
    * Find one user controller method. External View
    * Does not need authentication
+   *
+   * View mode = 1 means external view
    *
    * @param id unique id of the user
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.usersService.findOne(id);
-  }
-
-  /**
-   * Find users contact information controller method
-   *
-   * @param request
-   * @returns
-   */
-  async findContact(@Request() request) {
-    return await this.usersService.findContactInfo(<User>request.user);
+  async findOne(
+    @Param('id') id: string,
+    @Query('viewMode', new DefaultValuePipe(0), ParseIntPipe) viewMode,
+  ) {
+    return await this.usersService.findOne(id, viewMode);
   }
 
   /**
@@ -140,5 +128,25 @@ export class UsersController {
     @Body() payload: ChangePasswordDto,
   ) {
     return await this.usersService.updatePassword(<User>request.user, payload);
+  }
+
+  /**
+   * Find user contact information controller method
+   *
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('/contact')
+  async findContact(
+    @Query(
+      'userID',
+      new DefaultValuePipe(DEFAULT_UUID),
+      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    userId: string,
+  ) {
+    console.log(userId);
+    return await this.usersService.findContactInfo(userId);
   }
 }

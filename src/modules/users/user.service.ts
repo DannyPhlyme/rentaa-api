@@ -56,15 +56,15 @@ export class UsersService {
   }
 
   /**
-   * Find a single user service method A.K.A External View
+   * Find a single user service method
    *
    * @param id unique id of the user to be found
    * @returns
    */
-  public async findOne(id: string) {
+  public async findOne(id: string, viewMode: number) {
     try {
       const user: User = await this.userRepository.findOne({
-        relations: ['gadgets'], // load review entity too
+        relations: ['profile', 'gadgets'], // load review entity too
         where: {
           id,
         },
@@ -75,69 +75,6 @@ export class UsersService {
       }
       return {
         item: user,
-      };
-    } catch (error) {
-      throw new HttpException(
-        error.response
-          ? error.response
-          : `This is an unexpected error, please contact support`,
-        error.status ? error.status : 500,
-      );
-    }
-  }
-
-  public async findProfile(user: User) {
-    try {
-      user = await this.userRepository.findOne({
-        relations: ['profile'],
-        where: {
-          id: user.id,
-        },
-      });
-
-      if (!user.profile) {
-        throw new HttpException(`User profile not found`, HttpStatus.NOT_FOUND);
-      }
-
-      return {
-        item: user.profile,
-      };
-    } catch (error) {
-      throw new HttpException(
-        error.response
-          ? error.response
-          : `This is an unexpected error, please contact support`,
-        error.status ? error.status : 500,
-      );
-    }
-  }
-
-  /**
-   * Find users contact information service method
-   *
-   * @param user
-   * @returns
-   */
-  public async findContactInfo(user: User) {
-    try {
-      user = await this.userRepository.findOne({
-        relations: ['profile'],
-        where: {
-          id: user.id,
-        },
-      });
-
-      const contactInfo = await this.profileRepository
-        .createQueryBuilder('profile')
-        .select([
-          'profile.phone_number',
-          'profile.twitter',
-          'profile.instagram',
-        ])
-        .where('profile.id = :id', { id: user.profile.id });
-
-      return {
-        item: contactInfo,
       };
     } catch (error) {
       throw new HttpException(
@@ -340,6 +277,48 @@ export class UsersService {
           ? e.response
           : `This is an unexpected error, please contact support`,
         e.status ? e.status : 500,
+      );
+    }
+  }
+
+  /**
+   * Find users contact information service method
+   *
+   * @param userId
+   * @returns
+   */
+  public async findContactInfo(userId: string) {
+    try {
+      console.log('something happened here');
+
+      const user: User = await this.userRepository.findOne({
+        relations: ['profile'],
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user)
+        throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST);
+
+      const contactInfo = this.profileRepository
+        .createQueryBuilder('profile')
+        .select([
+          'profile.phone_number',
+          'profile.twitter',
+          'profile.instagram',
+        ])
+        .where('profile.id = :id', { id: user.profile.id });
+
+      return {
+        item: contactInfo,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
       );
     }
   }

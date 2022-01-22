@@ -13,6 +13,7 @@ export class Profile extends BaseEntity {
 
   @OneToMany(() => Review, (review) => review.profile, {
     onDelete: 'SET NULL', // fallback for delete
+    eager: true,
   })
   reviews: Review[];
 

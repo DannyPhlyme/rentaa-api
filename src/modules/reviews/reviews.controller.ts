@@ -69,10 +69,6 @@ export class ReviewsController {
    */
   @UseGuards(JwtAuthGuard)
   @Get()
-  // @ApiQuery({
-  //   name: 'reviweeID',
-  //   required: false,
-  // })
   async findAll(
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
