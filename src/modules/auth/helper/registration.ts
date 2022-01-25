@@ -28,7 +28,7 @@ export class Registration {
     private profileRepo: Repository<Profile>,
 
     @InjectRepository(SocialHandle)
-    private socilaHandleRepo: Repository<SocialHandle>,
+    private socialHandleRepo: Repository<SocialHandle>,
 
     private emailService: EmailService,
 
@@ -65,11 +65,11 @@ export class Registration {
 
       await this.profileRepo.save(profile);
 
-      const socialHandle: SocialHandle = this.socilaHandleRepo.create({
+      const socialHandle: SocialHandle = this.socialHandleRepo.create({
         profile,
       });
 
-      await this.socilaHandleRepo.save(socialHandle);
+      await this.socialHandleRepo.save(socialHandle);
 
       const userPassword: Password = this.passwordRepo.create({
         user: newUser,
@@ -93,9 +93,9 @@ export class Registration {
 
       await this.tokenRepo.save(userToken);
 
-      // await this.emailService.sendMail({
-      //   data: emailTemplate('verificationEmail', email, emailToken.token),
-      // });
+      await this.emailService.sendMail({
+        data: emailTemplate('verificationEmail', email, emailToken.token),
+      });
 
       return {
         result: newUser,
