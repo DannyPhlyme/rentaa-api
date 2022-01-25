@@ -1,31 +1,30 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
-  Request,
-  UseGuards,
-  Patch,
+  Controller,
   DefaultValuePipe,
-  ParseIntPipe,
-  Query,
-  UseInterceptors,
-  UploadedFile,
+  Get,
   HttpException,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { UsersService } from './user.service';
-import { UpdateUserDto } from './dto/update-user';
-import { ChangePasswordDto } from './dto/update-password';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
+import { DEFAULT_UUID, multerOptions } from 'src/config/config';
+import { User } from 'src/database/entities/auth/user';
 import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { ChangeEmailDto } from './dto/update-email';
-import { User } from 'src/database/entities/auth/user';
-import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { DEFAULT_UUID, multerOptions } from '../../config/config';
-import { AvatarType } from '../../types/avatar.type';
+import { ChangePasswordDto } from './dto/update-password';
+import { UpdateUserDto } from './dto/update-user';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -39,6 +38,7 @@ export class UsersController {
    * @param limit
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Request() request,
@@ -55,26 +55,58 @@ export class UsersController {
   }
 
   /**
-   * Find one user controller method. External View
-   * Does not need authentication
+   * Update email controller method
    *
-   * View mode = 1 means external view
-   *
-   * @param id unique id of the user
+   * @param request
+   * @param payload
    * @returns
    */
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @Query('viewMode', new DefaultValuePipe(0), ParseIntPipe) viewMode,
+  @Post('update-email')
+  async updateEmail(@Request() request: any, @Body() payload: ChangeEmailDto) {
+    return await this.usersService.updateEmail(request.user, payload);
+  }
+
+  /**
+   * Find contact information controller method
+   *
+   * @param userId unique id of the user
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('findContact')
+  async findContactInfo(
+    @Query('userID', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe())
+    userId,
   ) {
-    return await this.usersService.findOne(id, viewMode);
+    return await this.usersService.findContactInfo(userId);
+  }
+
+  // @Get('look')
+  // async look() {
+  //   console.log('look');
+  //   return 'look';
+  // }
+
+  /**
+   * Update paassword controller method
+   *
+   * @param request
+   * @param payload
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('update-password')
+  async updatePassword(
+    @Request() request: any,
+    @Body() payload: ChangePasswordDto,
+  ) {
+    return await this.usersService.updatePassword(<User>request.user, payload);
   }
 
   /**
    * Update profile controller method
-   *@todo needs fix... Patch method
+   *
    * @param payload
    * @param request
    * @returns
@@ -85,68 +117,30 @@ export class UsersController {
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() photo: Express.Multer.File,
     @Request() request: any,
   ) {
-    if (!file)
+    if (!photo)
       throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
 
     updateUserDto = JSON.parse(JSON.stringify(updateUserDto)); // parse the request body
     return await this.usersService.update(
       id,
       updateUserDto,
-      file.buffer,
-      file.originalname,
+      photo.buffer,
+      photo.originalname,
       <User>request.user,
     );
   }
 
   /**
-   * Update email controller method
+   * Find one user controller method
    *
-   * @param request
-   * @param payload
-   * @returns
+   * @param id unique id of the user
    */
   @UseGuards(JwtAuthGuard)
-  @Post('/update-email')
-  async updateEmail(@Request() request: any, @Body() payload: ChangeEmailDto) {
-    return await this.usersService.updateEmail(request.user, payload);
-  }
-
-  /**
-   * Update password controller method
-   *
-   * @param request
-   * @param payload
-   * @returns
-   */
-  @UseGuards(JwtAuthGuard)
-  @Post('/update-password')
-  async updatePassword(
-    @Request() request: any,
-    @Body() payload: ChangePasswordDto,
-  ) {
-    return await this.usersService.updatePassword(<User>request.user, payload);
-  }
-
-  /**
-   * Find user contact information controller method
-   *
-   * @param request
-   * @returns
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get('/contact')
-  async findContact(
-    @Query(
-      'userID',
-      new DefaultValuePipe(DEFAULT_UUID),
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
-    )
-    userId: string,
-  ) {
-    console.log(userId);
-    return await this.usersService.findContactInfo(userId);
+  @Get(':id')
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    return await this.usersService.findOne(id);
   }
 }

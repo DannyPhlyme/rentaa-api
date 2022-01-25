@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UsersService } from './user.service';
+import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User } from 'src/database/entities/auth/user';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -30,4 +30,4 @@ import { Avatar } from '../../database/entities/auth/avatar';
   ],
   providers: [UsersService],
 })
-export class UserModule {}
+export class UsersModule {}

@@ -7,14 +7,14 @@ import { AppService } from './app.service';
 import { GadgetsModule } from './modules/gadgets/gadgets.module';
 import { ValidationPipe } from './validation.pipe';
 import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './modules/users/user.module';
+import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
     AuthModule,
-    UserModule,
+    UsersModule,
     GadgetsModule,
     CategoriesModule,
     ConfigModule.forRoot(),

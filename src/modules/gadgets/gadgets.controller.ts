@@ -100,19 +100,6 @@ export class GadgetsController {
   }
 
   /**
-   * Fine one gadget controller method
-   *
-   * @param id unique id of the gadget
-   * @param request
-   * @returns
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: string, @Request() request) {
-    return await this.gadgetsService.findOne(id, <User>request.user);
-  }
-
-  /**
    * Update gadget controller method
    *
    * @param id unique id of the gadget
@@ -160,6 +147,19 @@ export class GadgetsController {
   @Delete(':id/restore')
   async restore(@Param('id') id: string, @Request() request) {
     return await this.gadgetsService.restore(id, <User>request.user);
+  }
+
+  /**
+   * Fine one gadget controller method
+   *
+   * @param id unique id of the gadget
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Param('id') id: string, @Request() request) {
+    return await this.gadgetsService.findOne(id, <User>request.user);
   }
 
   /**

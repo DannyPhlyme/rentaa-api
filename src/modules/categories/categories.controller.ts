@@ -58,17 +58,6 @@ export class CategoriesController {
   }
 
   /**
-   * Find one category controller method
-   *
-   * @param id unique id of the category
-   * @returns
-   */
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.categoriesService.findOne(id);
-  }
-
-  /**
    * Find gadgets by category controller method
    *
    * @param id unique id of the category
@@ -89,6 +78,17 @@ export class CategoriesController {
       paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
       route: `http://localhost:3000/api/v1/categories/${id}/gadgets`,
     });
+  }
+
+  /**
+   * Find one category controller method
+   *
+   * @param id unique id of the category
+   * @returns
+   */
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return await this.categoriesService.findOne(id);
   }
 
   // /**

@@ -61,7 +61,7 @@ export class UsersService {
    * @param id unique id of the user to be found
    * @returns
    */
-  public async findOne(id: string, viewMode: number) {
+  public async findOne(id: string) {
     try {
       const user: User = await this.userRepository.findOne({
         relations: ['profile', 'gadgets'], // load review entity too
@@ -144,8 +144,8 @@ export class UsersService {
       profile.phone_number = phone_number;
       profile.description = description;
       profile.instagram = instagram;
-      profile.lga = twitter;
       profile.lga = lga;
+      profile.twitter = twitter;
       profile.state = state;
       profile.avatarId = avatar.id;
       profile = await this.profileRepository.save(profile);
