@@ -16,9 +16,7 @@ import { ChangePasswordDto } from './dto/update-password';
 import { UpdateUserDto } from './dto/update-user';
 import * as bcrypt from 'bcrypt';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
-import { ProfileType } from 'src/types/profile.type';
 import { Avatar } from '../../database/entities/auth/avatar';
-import { AvatarType } from '../../types/avatar.type';
 
 @Injectable()
 export class UsersService {
@@ -289,8 +287,6 @@ export class UsersService {
    */
   public async findContactInfo(userId: string) {
     try {
-      console.log('something happened here');
-
       const user: User = await this.userRepository.findOne({
         relations: ['profile'],
         where: {
@@ -301,14 +297,13 @@ export class UsersService {
       if (!user)
         throw new HttpException('User does not exist', HttpStatus.BAD_REQUEST);
 
-      const contactInfo = this.profileRepository
-        .createQueryBuilder('profile')
-        .select([
-          'profile.phone_number',
-          'profile.twitter',
-          'profile.instagram',
-        ])
-        .where('profile.id = :id', { id: user.profile.id });
+      const contactInfo = await this.profileRepository.findOne(
+        user.profile.id,
+        {
+          select: ['phone_number', 'twitter', 'instagram'],
+          loadEagerRelations: false,
+        },
+      );
 
       return {
         item: contactInfo,

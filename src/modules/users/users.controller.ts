@@ -31,30 +31,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   /**
-   * Find all users controller method
-   *
-   * @param request
-   * @param page
-   * @param limit
-   * @returns
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  async findAll(
-    @Request() request,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
-  ) {
-    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
-    return await this.usersService.findAll({
-      limit,
-      page,
-      paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
-      route: 'http://localhost:3000/api/v1/users',
-    });
-  }
-
-  /**
    * Update email controller method
    *
    * @param request
@@ -82,12 +58,6 @@ export class UsersController {
     return await this.usersService.findContactInfo(userId);
   }
 
-  // @Get('look')
-  // async look() {
-  //   console.log('look');
-  //   return 'look';
-  // }
-
   /**
    * Update paassword controller method
    *
@@ -102,6 +72,44 @@ export class UsersController {
     @Body() payload: ChangePasswordDto,
   ) {
     return await this.usersService.updatePassword(<User>request.user, payload);
+  }
+
+  /**
+   * Find all users controller method
+   *
+   * @param request
+   * @param page
+   * @param limit
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async findAll(
+    @Request() request,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+  ) {
+    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    return await this.usersService.findAll({
+      limit,
+      page,
+      paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
+      route: 'http://localhost:3000/api/v1/users',
+    });
+  }
+
+  /**
+   * Find one user controller method
+   *
+   * @param id unique id of the user
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(
+    @Param('id', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe())
+    id: string,
+  ) {
+    return await this.usersService.findOne(id);
   }
 
   /**
@@ -131,16 +139,5 @@ export class UsersController {
       photo.originalname,
       <User>request.user,
     );
-  }
-
-  /**
-   * Find one user controller method
-   *
-   * @param id unique id of the user
-   */
-  @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return await this.usersService.findOne(id);
   }
 }

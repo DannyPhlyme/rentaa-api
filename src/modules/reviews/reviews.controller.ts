@@ -93,6 +93,13 @@ export class ReviewsController {
     );
   }
 
+  /**
+   * Update review controller method
+   *
+   * @param id unique id of the gadget
+   * @param updateReviewDto
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(
@@ -109,6 +116,12 @@ export class ReviewsController {
     );
   }
 
+  /**
+   * Delete review controller method
+   *
+   * @param id unique id of the gadget
+   * @returns
+   */
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(
@@ -131,17 +144,5 @@ export class ReviewsController {
     id: string,
   ) {
     return await this.reviewsService.restore(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findOne(
-    @Param(
-      'id',
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
-    )
-    id: string,
-  ) {
-    return await this.reviewsService.findOne(id);
   }
 }

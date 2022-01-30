@@ -66,6 +66,9 @@ export class CategoriesService {
    */
   public async findAll(options: IPaginationOptions) {
     try {
+      options.limit = !options.limit ? 3 : options.limit;
+      options.page = !options.page ? 1 : options.page;
+
       return paginate(this.categoryRepository, options, {});
     } catch (error) {
       throw new HttpException(

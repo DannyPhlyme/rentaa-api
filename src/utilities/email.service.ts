@@ -2,11 +2,67 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 // import * as fs from 'fs';
 import { readFileSync, writeFileSync } from 'fs';
+import path from 'path';
 import { SendEmailDto } from 'src/modules/auth/dto/email';
+import * as nunjucks from 'nunjucks';
+
+// const env = new nunjucks.Environment(
+//   new nunjucks.FileSystemLoader(path.resolve(__dirname, '../../../templates'), {
+//     noCache: true, // remove in production
+//   }),
+// );
+
 @Injectable()
 export class EmailService {
   /**
-   * Mail a user
+   * Render email to html from template file
+   */
+  // renderEmailTemplate(templateName: string, data: any) {
+  //   const template = env.render(`${templateName}.html`, data);
+  //   return template;
+  // }
+
+  /**
+   * Mail a user (SendGrid)
+   *
+   * @param payload
+   * @returns
+   */
+  // async mailUser(payload: {
+  //   to: string;
+  //   subject: string;
+  //   emailData: Record<string, any>;
+  //   emailTemplate: string;
+  // }) {
+  //   const html = this.renderEmailTemplate(
+  //     payload.emailTemplate,
+  //     payload.emailData,
+  //   );
+
+  //   const ses = new AWS.SES({ apiVersion: '2010-12-01' });
+  //   const params = {
+  //     Destination: {
+  //       ToAddresses: [payload.to],
+  //     },
+  //     Message: {
+  //       Body: {
+  //         Html: {
+  //           Charset: 'UTF-8',
+  //           Data: html,
+  //         },
+  //       },
+  //       Subject: {
+  //         Charset: 'UTF-8',
+  //         Data: payload.subject,
+  //       },
+  //     },
+  //     Source: `${config.general.appName} <${config.general.mailSender}>`,
+  //   };
+  //   return await ses.sendEmail(params).promise();
+  // }
+
+  /**
+   * Mail a user (Elastic Email)
    */
   public async sendMail(payload: SendEmailDto): Promise<void> {
     try {
@@ -25,6 +81,7 @@ export class EmailService {
       );
     } catch (error: any) {}
   }
+
   /**
    * Add user to aweber list
    */
@@ -79,12 +136,14 @@ export class EmailService {
       }
     }
   }
+
   /**
    * Reads token from the file
    */
   private readToken() {
     return JSON.parse(readFileSync('credentials.json', 'utf-8').toString());
   }
+
   /**
    * Updates the token in the json file
    */
