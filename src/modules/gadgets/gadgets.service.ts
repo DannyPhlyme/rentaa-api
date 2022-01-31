@@ -81,10 +81,7 @@ export class GadgetsService {
       for await (const [index, photoDto] of photoDtoArray.entries()) {
         if (index == 0) photoDto.cover = true; // set the first photo as cover photo
 
-        const result = this.uploadFileToS3(
-          photoDto.buffer,
-          photoDto.originalname,
-        ); // upload photo to S3
+        const result = this.uploadFileToS3(photoDto.buffer); // upload photo to S3
 
         photoDto.key = (await result).Key;
         photoDto.bucketname = (await result).Bucket;
@@ -226,7 +223,6 @@ export class GadgetsService {
           ); // check if category exists
 
         updateGadgetDto.category = category;
-        console.log('categoriesssss');
       }
 
       // check if gadget photos is to be updated
@@ -234,11 +230,13 @@ export class GadgetsService {
         const photos: Array<GadgetPhoto> = [];
 
         for (let id = 0; id < photoIds.length; id++) {
-          const photo: GadgetPhoto = await this.photoRepository.findOne(id);
+          const photo: GadgetPhoto = await this.photoRepository.findOne(
+            photoIds[id],
+          );
 
           if (!photo)
             throw new HttpException(
-              `Photo of id (${id}) does not exist`,
+              `Photo of id (${photoIds[id]}) does not exist`,
               HttpStatus.NOT_FOUND,
             ); // check if photo exists
 
@@ -247,7 +245,7 @@ export class GadgetsService {
         // console.log(photos);
 
         for (let photo = 0; photo < photos.length; photo++) {
-          await this.updateS3File(
+          await this.uploadFileToS3(
             photoDtoArray[photo].buffer,
             photos[photo].key,
           ); // update s3 photo in aws
@@ -258,20 +256,17 @@ export class GadgetsService {
           photos[photo].size = photoDtoArray[photo].size;
         }
 
-        updateGadgetDto.photos = photos;
-        console.log('photossss');
-        // console.log(photos);
-
-        console.log(updateGadgetDto.photos);
+        photos.forEach(async (photo) => {
+          await this.photoRepository.update(photo.id, photo);
+        });
       }
 
       if (!(typeof updateGadgetDto.category === 'object'))
         delete updateGadgetDto.category; // fail-safe approach
 
       delete updateGadgetDto.categoryId; // delete property categoryId to conform to QueryDeepPartialEntity
+      delete updateGadgetDto.photos;
 
-      console.log('almost');
-      console.log(updateGadgetDto);
       await this.gadgetRepository.update({ id, user }, updateGadgetDto);
 
       gadget = await this.gadgetRepository.findOne({
@@ -459,11 +454,12 @@ export class GadgetsService {
    */
   private async uploadFileToS3(
     dataBuffer: Buffer,
-    filename: string,
+    key?: string,
+    // filename: string,
   ): Promise<{ Key: string; Bucket: string; MetaData: any }> {
     const objectParams = {
       Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-      Key: `GadgetPhotos/${uuid()}-${filename}`,
+      Key: key ? key : `GadgetPhotos/${uuid()}.jpg`,
       Body: dataBuffer,
     };
 

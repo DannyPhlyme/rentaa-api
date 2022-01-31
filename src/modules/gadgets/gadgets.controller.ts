@@ -127,7 +127,7 @@ export class GadgetsController {
 
   /**
    * Fine one gadget controller method
-   *
+   * @todo
    * @param id unique id of the gadget
    * @param request
    * @returns
@@ -161,16 +161,21 @@ export class GadgetsController {
     @UploadedFiles() photos: Array<Express.Multer.File>,
     @Query(
       'photo_ids',
-      new DefaultValuePipe(DEFAULT_UUID),
-      new ParseArrayPipe({ items: String, separator: ',' }),
+      // new DefaultValuePipe(DEFAULT_UUID),
+      new ParseArrayPipe({ items: String, separator: ',', optional: true }),
     )
     photoIds: string[],
   ) {
-    if (photoIds || photos) {
-      if (photoIds[0] == DEFAULT_UUID) null;
-      else if (photoIds.length != photos.length)
+    // console.log(photos);
+    if (photos.length != 0) {
+      if (!photoIds)
         throw new HttpException(
-          `Uploaded photos count doesn't match query params count`,
+          `Photo id(s) must be present if uploading photos`,
+          HttpStatus.BAD_REQUEST,
+        );
+      if (photoIds.length != photos.length)
+        throw new HttpException(
+          `Uploaded photos count doesn't match photo ids count`,
           HttpStatus.BAD_REQUEST,
         );
     }
