@@ -7,6 +7,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseBoolPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -16,7 +17,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/config';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
 import { CreateGadgetDto } from './dto/create-gadget.dto';
@@ -26,12 +27,19 @@ import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { User } from 'src/database/entities/auth/user';
 import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 
+/**
+ * The Gadget controller class. Responsible for handling incoming gadget
+ * requests and returning responses to the client
+ *
+ * @class
+ */
 @Controller('gadgets')
 export class GadgetsController {
   constructor(private readonly gadgetsService: GadgetsService) {}
 
   /**
    * List gadget controller method
+   *
    * @param createGadgetDto
    * @param photos
    * @param request
@@ -54,8 +62,6 @@ export class GadgetsController {
       photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties to new object and push to photoDto array
     });
 
-    // console.log(photos); // print photos to console
-
     return await this.gadgetsService.create(
       createGadgetDto,
       photoDtoArray,
@@ -65,7 +71,11 @@ export class GadgetsController {
 
   /**
    * Find all gadget controller method
+   *
    * @param request
+   * @param page
+   * @param limit
+   * @param cover filter by cover photo
    * @returns
    */
   @UseGuards(JwtAuthGuard)
@@ -74,19 +84,25 @@ export class GadgetsController {
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('cover', new DefaultValuePipe(false), ParseBoolPipe) cover,
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
-    return this.gadgetsService.findAll(<User>request.user, {
-      limit,
-      page,
-      paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
-      route: 'http://localhost:3000/api/v1/gadgets',
-    });
+    return await this.gadgetsService.findAll(
+      <User>request.user,
+      {
+        limit,
+        page,
+        paginationType: PaginationTypeEnum.LIMIT_AND_OFFSET,
+        route: 'http://localhost:3000/api/v1/gadgets',
+      },
+      cover,
+    );
   }
 
   /**
    * Fine one gadget controller method
-   * @param id
+   *
+   * @param id unique id of the gadget
    * @param request
    * @returns
    */
@@ -96,18 +112,59 @@ export class GadgetsController {
     return await this.gadgetsService.findOne(id, <User>request.user);
   }
 
+  /**
+   * Update gadget controller method
+   *
+   * @param id unique id of the gadget
+   * @param request
+   * @param updateGadgetDto
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGadgetDto: UpdateGadgetDto) {
-    return this.gadgetsService.update(+id, updateGadgetDto);
+  @UseInterceptors(FileInterceptor('photo', multerOptions))
+  async update(
+    @Param('id') id: string,
+    @Request() request,
+    @Body() updateGadgetDto: UpdateGadgetDto,
+  ) {
+    updateGadgetDto = JSON.parse(JSON.stringify(updateGadgetDto)); // parse the request body
+    return await this.gadgetsService.update(
+      id,
+      <User>request.user,
+      updateGadgetDto,
+    );
   }
 
+  /**
+   * Delete gadget controller method
+   *
+   * @param id unique id of the gadget
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.gadgetsService.remove(+id);
+  async remove(@Param('id') id: string, @Request() request) {
+    return await this.gadgetsService.remove(id, <User>request.user);
+  }
+
+  /**
+   * Restore gadget controller method
+   *
+   * @param id umique id of the gadget
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/restore')
+  async restore(@Param('id') id: string, @Request() request) {
+    return await this.gadgetsService.restore(id, <User>request.user);
   }
 
   /**
    * Utility method
+   *
    * @param ms number in millisecond
    * @returns
    */

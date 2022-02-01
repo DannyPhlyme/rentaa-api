@@ -19,7 +19,7 @@ export class Gadget extends BaseEntity {
   category: Category;
 
   @OneToMany(() => GadgetPhoto, (photo) => photo.gadget, {
-    onDelete: 'SET NULL',
+    onDelete: 'SET NULL', // fallback for delete
   })
   photos: GadgetPhoto[];
 
@@ -37,12 +37,11 @@ export class Gadget extends BaseEntity {
   description: string;
 
   @Column({
-    type: 'numeric',
-    precision: 8,
-    scale: 2,
+    type: 'varchar',
+    length: 255,
     nullable: true,
   })
-  price: number;
+  price: string;
 
   @Column({
     type: 'enum',

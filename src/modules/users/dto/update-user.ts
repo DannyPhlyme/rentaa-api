@@ -1,4 +1,4 @@
-import { OmitType, PartialType } from '@nestjs/mapped-types';
+import { OmitType, PartialType, PickType } from '@nestjs/mapped-types';
 import {
   IsOptional,
   IsString,
@@ -7,15 +7,18 @@ import {
   MaxLength,
 } from 'class-validator';
 import { RegisterDto } from '../../auth/dto/register';
+import { Avatar } from '../../../database/entities/auth/avatar';
 
-export class UpdateUserDto extends PartialType(
-  OmitType(RegisterDto, ['email', 'password'] as const),
-) {
+export class UpdateUserDto extends PickType(RegisterDto, [
+  'first_name',
+  'last_name',
+  'phone_number',
+] as const) {
   @MaxLength(200, {
-    message: 'Address has to be a maximum length of 200 characters',
+    message: 'State has to be a maximum length of 200 characters',
   })
   @IsOptional()
-  address?: string;
+  state?: string;
 
   @IsString({
     message: 'Please provide a valid local government area',

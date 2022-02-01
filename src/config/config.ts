@@ -20,3 +20,5 @@ export const multerOptions: MulterOptions = {
     fileSize: 2000000,
   },
 };
+
+export const DEFAULT_UUID = '2ef1d608-8afd-428d-a732-b7ee93ce1711';

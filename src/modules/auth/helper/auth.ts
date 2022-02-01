@@ -135,9 +135,6 @@ export class Auth {
           token,
           refreshToken: refreshToken.token,
           expiry_date: refreshToken.expiry_date,
-        },
-        refreshToken: {
-          token_value: refreshToken.token,
           is_revoked: refreshToken.is_revoked,
         },
         user,

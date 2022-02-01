@@ -28,7 +28,7 @@ export class Login {
 
       if (!getUser.email_verified) {
         throw new HttpException(
-          'Unverified Email. Please verify your eamil',
+          'Unverified Email. Please verify your email',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -39,12 +39,9 @@ export class Login {
         ip,
       );
 
-      if (generateAuth) {
-        return generateAuth;
-      }
-
       return {
-        results: { ...generateAuth },
+        statusCode: 200,
+        message: generateAuth,
       };
     } catch (e) {
       throw new HttpException(

@@ -1,6 +1,5 @@
 import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base';
-// import { ImageType } from '../enum';
 import { Gadget } from './gadget';
 
 /**

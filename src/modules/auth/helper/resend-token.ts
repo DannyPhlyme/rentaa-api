@@ -138,10 +138,13 @@ export class ResendToken {
       await this.TokenRepo.save(getRefreshToken);
 
       return {
-        token: accessToken,
-        refresh_token: tokenRefreshed.token,
-        expiry_date: tokenRefreshed.expiry_date,
-        is_revoked: tokenRefreshed.is_revoked,
+        statusCode: 201,
+        message: {
+          token: accessToken,
+          refresh_token: tokenRefreshed.token,
+          expiry_date: tokenRefreshed.expiry_date,
+          is_revoked: tokenRefreshed.is_revoked,
+        },
       };
     } catch (e) {
       throw new HttpException(

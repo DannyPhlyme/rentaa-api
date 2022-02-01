@@ -10,7 +10,7 @@ import { Password } from 'src/database/entities/auth/password';
 import { TokenReason, emailTemplate } from 'src/database/entities/enum';
 import { Profile } from 'src/database/entities/auth/profile';
 import { EmailService } from 'src/utilities/email.service';
-import { SocialHandle } from '../../../database/entities/auth/social-handle';
+import { Avatar } from '../../../database/entities/auth/avatar';
 
 @Injectable()
 export class Registration {
@@ -27,8 +27,8 @@ export class Registration {
     @InjectRepository(Profile)
     private profileRepo: Repository<Profile>,
 
-    @InjectRepository(SocialHandle)
-    private socialHandleRepo: Repository<SocialHandle>,
+    @InjectRepository(Avatar)
+    private avatarRepo: Repository<Avatar>,
 
     private emailService: EmailService,
 
@@ -50,26 +50,25 @@ export class Registration {
         throw new HttpException('Email already Exists', HttpStatus.BAD_REQUEST);
       }
 
-      let newUser: User = this.userRepo.create({
-        email,
-        last_name,
-        first_name,
-      });
+      let avatar: Avatar = this.avatarRepo.create({});
 
-      newUser = await this.userRepo.save(newUser);
+      avatar = await this.avatarRepo.save(avatar);
 
       const profile: Profile = this.profileRepo.create({
         phone_number,
-        user: newUser,
+        avatarId: avatar.id,
       });
 
       await this.profileRepo.save(profile);
 
-      const socialHandle: SocialHandle = this.socialHandleRepo.create({
+      let newUser: User = this.userRepo.create({
+        email,
+        last_name,
+        first_name,
         profile,
       });
 
-      await this.socialHandleRepo.save(socialHandle);
+      newUser = await this.userRepo.save(newUser);
 
       const userPassword: Password = this.passwordRepo.create({
         user: newUser,
@@ -98,7 +97,8 @@ export class Registration {
       });
 
       return {
-        result: newUser,
+        statusCode: 201,
+        message: newUser,
       };
     } catch (e) {
       throw new HttpException(
