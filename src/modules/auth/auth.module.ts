@@ -19,14 +19,14 @@ import { Profile } from 'src/database/entities/auth/profile';
 import { Avatar } from 'src/database/entities/auth/avatar';
 import { Auth } from './helper/auth';
 import { Formatter } from '../../utilities/formatter';
-import { UserModule } from '../users/user.module';
+import { UsersModule } from '../users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { CheckCredential } from './helper/check-credentials';
 import { EmailService } from 'src/utilities/email.service';
 
 @Module({
   imports: [
-    UserModule,
+    UsersModule,
     PassportModule,
     ConfigModule.forRoot(),
     JwtModule.register({

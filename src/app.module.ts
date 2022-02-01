@@ -7,15 +7,19 @@ import { AppService } from './app.service';
 import { GadgetsModule } from './modules/gadgets/gadgets.module';
 import { ValidationPipe } from './validation.pipe';
 import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './modules/users/user.module';
+import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { CategoriesService } from './modules/categories/categories.service';
+import { Category } from './database/entities/gadgets/category';
+import { Gadget } from './database/entities/gadgets/gadget';
 
 @Module({
   imports: [
     AuthModule,
-    UserModule,
+    UsersModule,
     GadgetsModule,
+    ReviewsModule,
     CategoriesModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
@@ -34,7 +38,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
       synchronize: true,
       logging: ['error'],
     }),
-    ReviewsModule,
+    TypeOrmModule.forFeature([Category, Gadget]),
   ],
   controllers: [AppController],
   providers: [
@@ -43,6 +47,8 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
       useClass: ValidationPipe,
     },
     AppService,
+    CategoriesService,
   ],
+  // exports: [CategoriesService],
 })
 export class AppModule {}

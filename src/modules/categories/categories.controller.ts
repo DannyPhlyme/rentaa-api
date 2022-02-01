@@ -1,19 +1,17 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
   Query,
   DefaultValuePipe,
   ParseIntPipe,
+  UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
+import { DEFAULT_UUID } from '../../config/config';
 
 /**
  * The Category controller class. Responsible for handling incoming category
@@ -43,6 +41,7 @@ export class CategoriesController {
    * @param limit
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
@@ -63,8 +62,12 @@ export class CategoriesController {
    * @param id unique id of the category
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(
+    @Param('id', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe({}))
+    id: string,
+  ) {
     return await this.categoriesService.findOne(id);
   }
 
@@ -76,9 +79,11 @@ export class CategoriesController {
    * @param limit
    * @returns
    */
+  @UseGuards(JwtAuthGuard)
   @Get(':id/gadgets')
   async findGadgetsByCategory(
-    @Param('id') id: string,
+    @Param('id', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe({}))
+    id: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
   ) {

@@ -3,14 +3,14 @@ import { CreateGadgetDto } from './dto/create-gadget.dto';
 import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { Gadget } from '../../database/entities/gadgets/gadget';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Category } from '../../database/entities/gadgets/category';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
 import { User } from '../../database/entities/auth/user';
 import { v4 as uuid } from 'uuid';
 import { s3Client } from 'src/providers/aws/clients/S3';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
@@ -81,10 +81,7 @@ export class GadgetsService {
       for await (const [index, photoDto] of photoDtoArray.entries()) {
         if (index == 0) photoDto.cover = true; // set the first photo as cover photo
 
-        const result = this.uploadFileToS3(
-          photoDto.buffer,
-          photoDto.originalname,
-        ); // upload photo to S3
+        const result = this.uploadFileToS3(photoDto.buffer); // upload photo to S3
 
         photoDto.key = (await result).Key;
         photoDto.bucketname = (await result).Bucket;
@@ -202,6 +199,8 @@ export class GadgetsService {
     id: string,
     user: User,
     updateGadgetDto: UpdateGadgetDto,
+    photoDtoArray: Array<CreatePhotoDto>,
+    photoIds: string[],
   ) {
     try {
       let gadget: Gadget = await this.gadgetRepository.findOne({ id, user });
@@ -209,6 +208,7 @@ export class GadgetsService {
       if (!gadget)
         throw new HttpException('Gadget does not exist', HttpStatus.NOT_FOUND); // check if gadget exists
 
+      // check if the catgory is to be updated
       if (updateGadgetDto.categoryId) {
         const category: Category = await this.categoryRepository.findOne({
           where: {
@@ -223,12 +223,49 @@ export class GadgetsService {
           ); // check if category exists
 
         updateGadgetDto.category = category;
-      } // check if the catgory is to be updated
+      }
+
+      // check if gadget photos is to be updated
+      if (photoDtoArray.length != 0) {
+        const photos: Array<GadgetPhoto> = [];
+
+        for (let id = 0; id < photoIds.length; id++) {
+          const photo: GadgetPhoto = await this.photoRepository.findOne(
+            photoIds[id],
+          );
+
+          if (!photo)
+            throw new HttpException(
+              `Photo of id (${photoIds[id]}) does not exist`,
+              HttpStatus.NOT_FOUND,
+            ); // check if photo exists
+
+          photos.push(photo); // push photos to be updated
+        }
+        // console.log(photos);
+
+        for (let photo = 0; photo < photos.length; photo++) {
+          await this.uploadFileToS3(
+            photoDtoArray[photo].buffer,
+            photos[photo].key,
+          ); // update s3 photo in aws
+
+          photos[photo].originalname = photoDtoArray[photo].originalname;
+          photos[photo].encoding = photoDtoArray[photo].encoding;
+          photos[photo].mimetype = photoDtoArray[photo].mimetype;
+          photos[photo].size = photoDtoArray[photo].size;
+        }
+
+        photos.forEach(async (photo) => {
+          await this.photoRepository.update(photo.id, photo);
+        });
+      }
 
       if (!(typeof updateGadgetDto.category === 'object'))
         delete updateGadgetDto.category; // fail-safe approach
 
       delete updateGadgetDto.categoryId; // delete property categoryId to conform to QueryDeepPartialEntity
+      delete updateGadgetDto.photos;
 
       await this.gadgetRepository.update({ id, user }, updateGadgetDto);
 
@@ -353,24 +390,121 @@ export class GadgetsService {
     }
   }
 
+  public async viewMoreGadgets(
+    // userId: string,
+    gadgetId: string,
+    options: IPaginationOptions,
+    cover: boolean,
+  ) {
+    try {
+      const gadget = await this.gadgetRepository.findOne(gadgetId);
+
+      if (!gadget)
+        throw new HttpException(
+          'Gadget does not exist',
+          HttpStatus.BAD_REQUEST,
+        );
+
+      if (cover)
+        return paginate(
+          this.gadgetRepository
+            .createQueryBuilder('gadgets')
+            .leftJoinAndSelect('gadgets.photos', 'photo')
+            // .where('gadgets.userId = :user', { user: user.id })
+            .where(`gadgets.id <> :gadgetId`, { gadgetId })
+            .andWhere('photo.cover = :cover', { cover }), // load cover photos only
+          options,
+        );
+      // return paginate(this.gadgetRepository, options, {
+      //   // relations: ['photos'], // load related photo entity
+      //   join: {
+      //     alias: 'gadgets',
+      //     leftJoinAndSelect: {
+      //       photo: 'gadgets.photos',
+      //     },
+      //   },
+      //   where: {
+      //     id: Not(gadgetId),
+      //     // photos: { cover },
+      //   },
+      // });
+      else
+        return paginate(this.gadgetRepository, options, {
+          relations: ['photos'], // load related photo entity
+          where: {
+            id: Not(gadgetId),
+          },
+        });
+    } catch (error) {
+      throw new HttpException(
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
+      );
+    }
+  }
+
   /**
    * Utility method to upload photo to Amazon S3
    * @param dataBuffer
    * @param filename
+   * @param key
    * @returns
    */
   private async uploadFileToS3(
     dataBuffer: Buffer,
-    filename: string,
+    key?: string,
+    // filename: string,
   ): Promise<{ Key: string; Bucket: string; MetaData: any }> {
     const objectParams = {
       Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-      Key: `GadgetPhotos/${uuid()}-${filename}`,
+      Key: key ? key : `GadgetPhotos/${uuid()}.jpg`,
       Body: dataBuffer,
     };
 
     try {
       const data = await s3Client.send(new PutObjectCommand(objectParams));
+      return {
+        Key: objectParams.Key,
+        Bucket: objectParams.Bucket,
+        MetaData: data,
+      };
+    } catch (error) {
+      throw new Error('An error occured');
+    }
+  }
+
+  /**
+   * @todo use function overloading for update and upload functions
+   * key should be of type any while converting it to string throw
+   * errors where appropriate
+   * @param dataBuffer
+   * @param key
+   */
+  private async updateS3File(dataBuffer: Buffer, key: string) {
+    const objectParams = {
+      Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
+      Key: key,
+      Body: dataBuffer,
+    };
+
+    try {
+      await s3Client.send(new PutObjectCommand(objectParams));
+    } catch (error) {
+      console.log(error);
+      throw new Error('An error occured');
+    }
+  }
+
+  private async deleteFileFromS3(key: string) {
+    const objectParams = {
+      Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
+      Key: `GadgetPhotos/${key}`,
+    };
+
+    try {
+      const data = await s3Client.send(new DeleteObjectCommand(objectParams));
       return {
         Key: objectParams.Key,
         Bucket: objectParams.Bucket,
