@@ -4,7 +4,7 @@ import axios from 'axios';
 import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { SendEmailDto } from 'src/modules/auth/dto/email';
-import * as nunjucks from 'nunjucks';
+// import * as nunjucks from 'nunjucks';
 
 // const env = new nunjucks.Environment(
 //   new nunjucks.FileSystemLoader(path.resolve(__dirname, '../../../templates'), {

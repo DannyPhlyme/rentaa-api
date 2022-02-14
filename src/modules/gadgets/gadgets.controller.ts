@@ -109,10 +109,10 @@ export class GadgetsController {
   async findAll(
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit = 20,
     @Query('cover', new DefaultValuePipe(false), ParseBoolPipe) cover,
   ) {
-    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    limit = limit > 20 ? 20 : limit; // can't exceed 2 items per page
     return await this.gadgetsService.findAll(
       <User>request.user,
       {

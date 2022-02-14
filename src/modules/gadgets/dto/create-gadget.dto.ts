@@ -52,7 +52,7 @@ export class CreateGadgetDto {
   lga: string;
 
   @IsValidPhoneNumber({
-    message: 'Please provide a vallid phone number',
+    message: 'Please provide a valid phone number',
   })
   contact_info: string;
 

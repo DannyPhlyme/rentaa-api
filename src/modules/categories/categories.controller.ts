@@ -45,9 +45,9 @@ export class CategoriesController {
   @Get()
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
   ) {
-    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    limit = limit > 10 ? 10 : limit; // can't exceed 2 items per page
     return await this.categoriesService.findAll({
       limit,
       page,

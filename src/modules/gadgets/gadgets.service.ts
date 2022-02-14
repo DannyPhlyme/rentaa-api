@@ -94,7 +94,8 @@ export class GadgetsService {
       }
 
       return {
-        item: gadget,
+        status: 201,
+        data: gadget,
       };
     } catch (error) {
       throw new HttpException(
@@ -471,6 +472,7 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
+      console.log('>>>error', error);
       throw new Error('An error occured');
     }
   }

@@ -72,7 +72,8 @@ export class UsersService {
         throw new HttpException(`User Not Found`, HttpStatus.NOT_FOUND);
       }
       return {
-        item: user,
+        statusCode: 200,
+        user,
       };
     } catch (error) {
       throw new HttpException(
@@ -153,7 +154,8 @@ export class UsersService {
       });
 
       return {
-        item: user,
+        status: 201,
+        message: user,
       };
     } catch (error) {
       throw new HttpException(
