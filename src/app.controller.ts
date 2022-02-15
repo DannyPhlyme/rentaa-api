@@ -12,4 +12,12 @@ export class AppController {
   async index() {
     return await this.appService.index();
   }
+
+  /**
+   * Test for email sending
+   */
+  @Get('template')
+  sendMail() {
+    return this.appService.example();
+  }
 }

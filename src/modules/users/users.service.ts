@@ -96,12 +96,10 @@ export class UsersService {
   public async update(
     id: string,
     updateUserDto: UpdateUserDto,
-    dataBuffer: Buffer,
-    originalname: string,
+    photo: { dataBuffer: Buffer; originalname: string },
     user: User,
   ) {
     try {
-      console.log(updateUserDto);
       const {
         first_name,
         last_name,
@@ -135,8 +133,8 @@ export class UsersService {
       let avatar: Avatar = await this.avatarRepository.findOne(
         profile.avatarId,
       );
-      avatar.originalname = originalname;
-      avatar.data = dataBuffer;
+      avatar.originalname = photo.originalname;
+      avatar.data = photo.dataBuffer;
       avatar = await this.avatarRepository.save(avatar);
 
       profile.phone_number = phone_number;
@@ -308,6 +306,28 @@ export class UsersService {
       return {
         item: contactInfo,
       };
+    } catch (error) {
+      throw new HttpException(
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
+      );
+    }
+  }
+
+  public async findProfilePhoto(avatarId: string) {
+    try {
+      const avatar = await this.avatarRepository.findOne(avatarId);
+
+      if (!avatar) {
+        throw new HttpException(
+          'Profile avatar not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return avatar;
     } catch (error) {
       throw new HttpException(
         error.response

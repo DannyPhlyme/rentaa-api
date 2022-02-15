@@ -2,7 +2,7 @@
 
 :root {
   --purple: #35208c;
-  --white: #ffffff;
+  --white: hsl(0, 0%, 100%);
 }
 html {
   padding: 0;

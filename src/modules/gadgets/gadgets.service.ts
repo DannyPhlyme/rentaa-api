@@ -471,6 +471,7 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
+      console.log(error);
       throw new Error('An error occured');
     }
   }
@@ -497,6 +498,11 @@ export class GadgetsService {
     }
   }
 
+  /**
+   * @todo make some query parmas optional
+   * @param key
+   * @returns
+   */
   private async deleteFileFromS3(key: string) {
     const objectParams = {
       Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,

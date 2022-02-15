@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rentaa</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap");
+
+    :root {
+      --purple: #35208c;
+      --white: hsl(0, 0%, 100%);
+    }
+
+    html {
+      padding: 0;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0.5rem 0.1rem 0 0.1rem;
+      font-family: "DM Sans", sans-serif;
+
+      overflow-x: hidden;
+    }
+
+    body {
+      background-color: var(--purple);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background-color: var(--white);
+      width: 80vw;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px 10px 0px 0px;
+      padding: 1rem 1.2rem;
+      gap: 10px;
+    }
+
+    .container>* {
+      padding: 0.8rem 0.7rem;
+    }
+
+    h1 {
+      align-self: center;
+      font-size: 1.3rem;
+    }
+
+    button {
+      padding: 0.8rem;
+      color: var(--white);
+      align-self: center;
+      background-color: var(--purple);
+      border-radius: 5px;
+      border: 0;
+    }
+
+    @media (min-width: 700px) {
+      h1 {
+        align-self: center;
+        font-size: 2rem;
+      }
+
+      .container>* :not(button) {
+        padding: 1rem 2.8rem;
+        width: 70%;
+      }
+
+      button {
+        padding: 0.8rem;
+        color: var(--white);
+        align-self: center;
+        background-color: var(--purple);
+        border-radius: 5px;
+        border: 0;
+        width: initial;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    {{!-- <img
+      src="https://rentaa-gadgets.s3.us-east-1.amazonaws.com/Frame%2010.png?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjENL%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMyJIMEYCIQDTNbG4bC7Cr6DcQnlnzQZVYCkROhIo4ykiYZ77dagv9QIhAK%2F4NE5juRXNidOoqAcoaQjo9nUycyq7A%2BfsWOAtBDS6KuQCCBsQARoMMzc3MTcwNzE1MzU3Igx%2FXI%2FZ0cvTCV%2FYXbgqwQJHL3vWyLcj%2FPkyP7xVXmC8rWawM3U0f7HoaWQNCWSIOIlbJb7x7fvJjj7QLkYgzADRDluE2ANMBplZfxvMsU54ZxmjhLkT%2BWK3LStb9y%2F2d2hmuoBSubthPwPxlBbUdqmFgYG0%2Bpr6Ol12oXpsUPPSX2RD5%2BWwvTD%2BNf5nbN2%2Fjz3bwiIlNQ29vvz56cxq6yXJkyXo8oeWJfEdAoVHLTH15YumPY6YgbJJFLfaY1qerWGyyNMLkhyZ81x1UVKnWtBTAoui2SkcUH%2B6XhacLmKExPr%2BZNyOnPX%2FF%2FDrkConcWaLCWXgEao1eEkKQif5j4qrisw6F5LWgKcqtcFDnaH0tIqq6hqpVpXjVLcq6UUql%2BUVEBiJjSIpZ4HVXZ93oXeIBy3C7rBi5WgoK116WIs%2BNGkaAWZim17WwUujk3B7M%2BIw9fyPkAY6sgKcprLZNAEZRWDrKhAvDTKOvWlTDRCdoIsCiH2hu0SXxbZpsIPTXFkjNCRx6l8cw%2F8b2cJrEHTiWMXzARFGCZ%2FJnJ0OXJbeAwQVKTOaoRv2J%2FL%2FGzA35C%2F%2FGAifJ09TdSvHysqTN4O0xIdGenFwwI2guaJBFJ57PekB2iFRTPQSssqTeWttMwb%2Buah7lho7obHyRKu1%2Fqhr5rmRJw20U3aWlpZMs10L5Xp5HxuTAxlWU8cg8sCV4rQo%2Ftw18cGwon6D8NiACkb0UsImC5PV1u7mUs6WiwbgzKsnLDxHzaJqwYaY6YP9%2BXhu8mq1kRNTqz5y0wxHkoRy7W4pRedZ3KkkeNHs%2FJ6zrMYKQnETMOuFhaYmvC7iriHmQplxLibE%2FM69C6WTw0a%2BnS2zw21%2FVe9vKVk%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220209T174923Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Credential=ASIAVPUJAMLOVJYHRGX2%2F20220209%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=649687d9fb8e38395fd30bea413f409c115f2b9029bbfadd6695e64246133549"
+      alt="rentaa logo" /> --}}
+  </div>
+  <div class="container">
+    <h1>Welcome to Rentaa</h1>
+    <p>Hi {{ first_name }},</p>
+    <p>
+      Thank you for creating a Rentaa account. We just need you to verify your
+      account. Click on the button below to verify your account.
+    </p>
+    <button href="http://localhost:3000/api/v1/auth/verify-email/{{ verify_token }}">Verify Your Account</button>
+    <p>Or copy and paste the link below in your browser</p>
+    <p>If you did not request this email you can safely ignore it.</p>
+    <p>
+      Thank you. <br />
+      Rentaa squad
+    </p>
+  </div>
+</body>
+
+</html>
