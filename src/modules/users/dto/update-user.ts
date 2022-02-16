@@ -9,11 +9,9 @@ import {
 import { RegisterDto } from '../../auth/dto/register';
 import { Avatar } from '../../../database/entities/auth/avatar';
 
-export class UpdateUserDto extends PickType(RegisterDto, [
-  'first_name',
-  'last_name',
-  'phone_number',
-] as const) {
+export class UpdateUserDto extends PartialType(
+  PickType(RegisterDto, ['first_name', 'last_name', 'phone_number'] as const),
+) {
   @MaxLength(200, {
     message: 'State has to be a maximum length of 200 characters',
   })

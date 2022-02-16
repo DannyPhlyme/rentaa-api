@@ -164,14 +164,13 @@ export class UsersController {
     @UploadedFile() photo: Express.Multer.File,
     @Request() request: any,
   ) {
-    if (!photo)
-      throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
-
     updateUserDto = JSON.parse(JSON.stringify(updateUserDto)); // parse the request body
     return await this.usersService.update(
       id,
       updateUserDto,
-      { dataBuffer: photo.buffer, originalname: photo.originalname },
+      photo
+        ? { dataBuffer: photo.buffer, originalname: photo.originalname }
+        : null,
       <User>request.user,
     );
   }

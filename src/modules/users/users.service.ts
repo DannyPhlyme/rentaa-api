@@ -96,7 +96,7 @@ export class UsersService {
   public async update(
     id: string,
     updateUserDto: UpdateUserDto,
-    photo: { dataBuffer: Buffer; originalname: string },
+    photo: { dataBuffer: Buffer; originalname: string } | null,
     user: User,
   ) {
     try {
@@ -130,12 +130,15 @@ export class UsersService {
       user.last_name = last_name;
       user = await this.userRepository.save(user);
 
-      let avatar: Avatar = await this.avatarRepository.findOne(
-        profile.avatarId,
-      );
-      avatar.originalname = photo.originalname;
-      avatar.data = photo.dataBuffer;
-      avatar = await this.avatarRepository.save(avatar);
+      if (photo) {
+        let avatar: Avatar = await this.avatarRepository.findOne(
+          profile.avatarId,
+        );
+        avatar.originalname = photo.originalname;
+        avatar.data = photo.dataBuffer;
+        avatar = await this.avatarRepository.save(avatar);
+        profile.avatarId = avatar.id;
+      }
 
       profile.phone_number = phone_number;
       profile.description = description;
@@ -143,7 +146,6 @@ export class UsersService {
       profile.lga = lga;
       profile.twitter = twitter;
       profile.state = state;
-      profile.avatarId = avatar.id;
       profile = await this.profileRepository.save(profile);
 
       user = await this.userRepository.findOne(id, {
