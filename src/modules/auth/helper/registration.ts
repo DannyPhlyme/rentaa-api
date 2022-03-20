@@ -11,6 +11,8 @@ import { TokenReason, emailTemplate } from 'src/database/entities/enum';
 import { Profile } from 'src/database/entities/auth/profile';
 import { EmailService } from 'src/utilities/email.service';
 import { Avatar } from '../../../database/entities/auth/avatar';
+import * as path from 'path';
+// import { MailService } from '../../mail/mail.service';
 
 @Injectable()
 export class Registration {
@@ -30,7 +32,7 @@ export class Registration {
     @InjectRepository(Avatar)
     private avatarRepo: Repository<Avatar>,
 
-    private emailService: EmailService,
+    private mailer: EmailService,
 
     private authUtil: Auth,
   ) {}
@@ -92,13 +94,29 @@ export class Registration {
 
       await this.tokenRepo.save(userToken);
 
-      await this.emailService.sendMail({
-        data: emailTemplate('verificationEmail', email, emailToken.token),
-      });
+      // await this.mailer.mailUser({
+      //   to: newUser.email,
+      //   subject: `Rentaa: Verify your email`,
+      //   emailData: {
+      //     first_name: newUser.first_name,
+      //     verify_token: emailToken.token,
+      //   },
+      //   emailTemplate: 'verify-email',
+      // });
+      // console.log('process.cwd() registration: ', process.cwd());
+      // await this.mailer.mailUser({
+      //   to: 'dannyopeyemi24@gmail.com',
+      //   subject: `Rentaa: Verify your email`,
+      //   emailData: {
+      //     first_name: 'Sean',
+      //     verify_token: 'djkskjdkd-ajdjandnjadj-ajd',
+      //   },
+      //   emailTemplate: 'verify',
+      // });
 
       return {
         statusCode: 201,
-        message: newUser,
+        user: newUser
       };
     } catch (e) {
       throw new HttpException(

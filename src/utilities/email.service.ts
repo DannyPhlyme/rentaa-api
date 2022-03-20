@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
+import { HttpException, Injectable } from '@nestjs/common';
+import * as sgMail from '@sendgrid/mail';
 import axios from 'axios';
 // import * as fs from 'fs';
 import { readFileSync, writeFileSync } from 'fs';
-import path from 'path';
+import * as nunjucks from 'nunjucks';
+import * as path from 'path';
 import { SendEmailDto } from 'src/modules/auth/dto/email';
-// import * as nunjucks from 'nunjucks';
 
+// const nunjucks = require('nunjucks');
+
+// const env = nunjucks.configure(
+//   path.resolve(__dirname, '../../../../templates'),
+//   {
+//     noCache: false,
+//   },
+// );
+
+// console.log('Current directory:', __dirname);
 // const env = new nunjucks.Environment(
-//   new nunjucks.FileSystemLoader(path.resolve(__dirname, '../../../templates'), {
+//   new nunjucks.FileSystemLoader(path.resolve(__dirname, '../templates'), {
 //     noCache: true, // remove in production
 //   }),
 // );
 
+// console.log(__dirname + '../../../templates');
+// configure
+// const env = nunjucks.configure(path.resolve(__dirname, '../../../templates'), {
+//   noCache: true,
+// });
+// const env = nunjucks.configure('../templates', {
+//   // autoscape: true,
+//   noCache: false,
+//   // watch: true,
+// });
+// nunjucks.con
+
 @Injectable()
 export class EmailService {
+  constructor(private readonly mailerService: MailerService) {}
   /**
    * Render email to html from template file
    */
-  // renderEmailTemplate(templateName: string, data: any) {
-  //   const template = env.render(`${templateName}.html`, data);
-  //   return template;
-  // }
+  renderEmailTemplate(templateName: string, data: any) {
+    const template = nunjucks.render(`${templateName}.html`, data);
+    return template;
+  }
 
   /**
    * Mail a user (SendGrid)
@@ -28,38 +53,57 @@ export class EmailService {
    * @param payload
    * @returns
    */
-  // async mailUser(payload: {
-  //   to: string;
-  //   subject: string;
-  //   emailData: Record<string, any>;
-  //   emailTemplate: string;
-  // }) {
-  //   const html = this.renderEmailTemplate(
-  //     payload.emailTemplate,
-  //     payload.emailData,
-  //   );
-
-  //   const ses = new AWS.SES({ apiVersion: '2010-12-01' });
-  //   const params = {
-  //     Destination: {
-  //       ToAddresses: [payload.to],
-  //     },
-  //     Message: {
-  //       Body: {
-  //         Html: {
-  //           Charset: 'UTF-8',
-  //           Data: html,
-  //         },
-  //       },
-  //       Subject: {
-  //         Charset: 'UTF-8',
-  //         Data: payload.subject,
-  //       },
-  //     },
-  //     Source: `${config.general.appName} <${config.general.mailSender}>`,
-  //   };
-  //   return await ses.sendEmail(params).promise();
-  // }
+  async mailUser(payload: {
+    to: string;
+    subject: string;
+    emailData: Record<string, any>;
+    emailTemplate: string;
+  }) {
+    try {
+      //   const html = this.renderEmailTemplate(
+      //     payload.emailTemplate,
+      //     payload.emailData,
+      //   );
+      // const ses = new AWS.SES({ apiVersion: '2010-12-01' });
+      // const params = {
+      //   Destination: {
+      //     ToAddresses: [payload.to],
+      //   },
+      //   Message: {
+      //     Body: {
+      //       Html: {
+      //         Charset: 'UTF-8',
+      //         Data: html,
+      //       },
+      //     },
+      //     Subject: {
+      //       Charset: 'UTF-8',
+      //       Data: payload.subject,
+      //     },
+      //   },
+      //   Source: `${config.general.appName} <${config.general.mailSender}>`,
+      // };
+      // return await ses.sendEmail(params).promise();
+      //   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      //   const msgParams = {
+      //     to: payload.to, // Change to your recipient
+      //     from: 'dannyopeyemi@gmail.com', // Change to your verified sender
+      //     subject: payload.subject,
+      //     html,
+      //   };
+      //   await sgMail.send(msgParams);
+      // console.log('process.cwd() email service: ', process.cwd());
+      const data = this.mailerService.sendMail({
+        to: payload.to,
+        subject: payload.subject,
+        template: process.cwd() + `/templates/${payload.emailTemplate}`,
+        context: payload.emailData,
+      });
+      console.log(data);
+    } catch (error) {
+      throw new Error(`Something unxepected happen, ${{ error }}`);
+    }
+  }
 
   /**
    * Mail a user (Elastic Email)

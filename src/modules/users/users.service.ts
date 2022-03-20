@@ -97,12 +97,10 @@ export class UsersService {
   public async update(
     id: string,
     updateUserDto: UpdateUserDto,
-    dataBuffer: Buffer,
-    originalname: string,
+    photo: { dataBuffer: Buffer; originalname: string } | null,
     user: User,
   ) {
     try {
-      console.log(updateUserDto);
       const {
         first_name,
         last_name,
@@ -133,12 +131,15 @@ export class UsersService {
       user.last_name = last_name;
       user = await this.userRepository.save(user);
 
-      let avatar: Avatar = await this.avatarRepository.findOne(
-        profile.avatarId,
-      );
-      avatar.originalname = originalname;
-      avatar.data = dataBuffer;
-      avatar = await this.avatarRepository.save(avatar);
+      if (photo) {
+        let avatar: Avatar = await this.avatarRepository.findOne(
+          profile.avatarId,
+        );
+        avatar.originalname = photo.originalname;
+        avatar.data = photo.dataBuffer;
+        avatar = await this.avatarRepository.save(avatar);
+        profile.avatarId = avatar.id;
+      }
 
       profile.phone_number = phone_number;
       profile.description = description;
@@ -146,7 +147,6 @@ export class UsersService {
       profile.lga = lga;
       profile.twitter = twitter;
       profile.state = state;
-      profile.avatarId = avatar.id;
       profile = await this.profileRepository.save(profile);
 
       user = await this.userRepository.findOne(id, {
@@ -270,7 +270,7 @@ export class UsersService {
 
       return {
         message: `Password successfully changed`,
-      };
+      };  
     } catch (e) {
       throw new HttpException(
         e.response
@@ -310,6 +310,28 @@ export class UsersService {
       return {
         item: contactInfo,
       };
+    } catch (error) {
+      throw new HttpException(
+        error.response
+          ? error.response
+          : `This is an unexpected error, please contact support`,
+        error.status ? error.status : 500,
+      );
+    }
+  }
+
+  public async findProfilePhoto(avatarId: string) {
+    try {
+      const avatar = await this.avatarRepository.findOne(avatarId);
+
+      if (!avatar) {
+        throw new HttpException(
+          'Profile avatar not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return avatar;
     } catch (error) {
       throw new HttpException(
         error.response

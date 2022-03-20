@@ -23,9 +23,11 @@ import { UsersModule } from '../users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { CheckCredential } from './helper/check-credentials';
 import { EmailService } from 'src/utilities/email.service';
+// import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
+    // MailModule,
     UsersModule,
     PassportModule,
     ConfigModule.forRoot(),

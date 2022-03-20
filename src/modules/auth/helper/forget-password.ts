@@ -67,6 +67,7 @@ export class ForgotPassword {
       });
 
       return {
+        statusCode: 200,
         message: `Successful. A link is sent to your mail to change your password`,
       };
     } catch (e) {

@@ -12,14 +12,18 @@ import {
   Post,
   Query,
   Request,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 import { DEFAULT_UUID, multerOptions } from 'src/config/config';
 import { User } from 'src/database/entities/auth/user';
+import { Readable } from 'stream';
 import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { ChangeEmailDto } from './dto/update-email';
 import { ChangePasswordDto } from './dto/update-password';
@@ -29,6 +33,33 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  /**
+   * Find profile avatar controller method
+   *
+   * @param avatarId unique id of the avatar
+   * @param response
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('profile-avatar')
+  async findProfileAvatar(
+    @Query('avatarID', ParseUUIDPipe) avatarId,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const avatar = await this.usersService.findProfilePhoto(avatarId);
+
+    if (avatar.data) {
+      const stream = Readable.from(avatar.data);
+      response.set({
+        'Content-Disposition': `inline; filename="${avatar.originalname}"`,
+        'Content-Type': 'image',
+      });
+
+      return new StreamableFile(stream);
+    }
+    return (response.statusCode = 404);
+  }
 
   /**
    * Update email controller method
@@ -128,15 +159,13 @@ export class UsersController {
     @UploadedFile() photo: Express.Multer.File,
     @Request() request: any,
   ) {
-    if (!photo)
-      throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
-
     updateUserDto = JSON.parse(JSON.stringify(updateUserDto)); // parse the request body
     return await this.usersService.update(
       id,
       updateUserDto,
-      photo.buffer,
-      photo.originalname,
+      photo
+        ? { dataBuffer: photo.buffer, originalname: photo.originalname }
+        : null,
       <User>request.user,
     );
   }
