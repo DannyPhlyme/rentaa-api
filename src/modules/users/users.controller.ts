@@ -113,6 +113,7 @@ export class UsersController {
   /**
    * Find all users controller method
    *
+   * @todo todo change to 10
    * @param request
    * @param page
    * @param limit
@@ -123,7 +124,7 @@ export class UsersController {
   async findAll(
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2, 
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
     return await this.usersService.findAll({

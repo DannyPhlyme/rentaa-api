@@ -37,6 +37,7 @@ export class CategoriesController {
   /**
    * Find all categories controller method
    *
+   * @todo change to 10
    * @param page
    * @param limit
    * @returns

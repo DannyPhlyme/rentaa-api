@@ -95,13 +95,6 @@ export class ResetPassword {
       await this.passwordRepo.save(dbPassword);
       await this.passwordRepo.save(passwordInfo);
 
-      // fire an event, sending the ip address
-
-      //Send reset password email
-      await this.emailService.sendMail({
-        data: emailTemplate('reset_password', getUser.email),
-      });
-
       return {
         message: `Password has been reset.`,
       };
