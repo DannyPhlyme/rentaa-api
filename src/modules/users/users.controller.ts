@@ -52,7 +52,7 @@ export class UsersController {
     if (!avatar.data)
       return {
         message:
-          'No profile avatar detected. Please update your profile to upload a profile avatar',
+          'No profile avatar detected. Please update your profile and upload a profile avatar',
         data: avatar.data,
       };
 

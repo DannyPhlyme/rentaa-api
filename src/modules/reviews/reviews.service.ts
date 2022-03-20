@@ -22,6 +22,7 @@ export class ReviewsService {
   ) {}
 
   /**
+   * @todo look into profile showing null in db
    * Leave review service method. This method creates a new review
    *
    * @param createReviewDto
@@ -80,6 +81,7 @@ export class ReviewsService {
 
       return {
         item: profile,
+        message: 'Thank you for leaving a review'
       };
     } catch (error) {
       throw new HttpException(

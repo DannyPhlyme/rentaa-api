@@ -62,7 +62,7 @@ export class UsersService {
   public async findOne(id: string) {
     try {
       const user: User = await this.userRepository.findOne({
-        relations: ['profile', 'gadgets', 'reviews'], // load review entity too
+        relations: ['profile', 'gadgets'], // load review entity too
         where: {
           id,
         },
@@ -75,6 +75,8 @@ export class UsersService {
         item: user,
       };
     } catch (error) {
+      console.log(error);
+      
       throw new HttpException(
         error.response
           ? error.response

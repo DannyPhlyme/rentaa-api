@@ -392,6 +392,7 @@ export class GadgetsService {
 
   public async viewMoreGadgets(
     // userId: string,
+    user: User,
     gadgetId: string,
     options: IPaginationOptions,
     cover: boolean,
@@ -410,7 +411,7 @@ export class GadgetsService {
           this.gadgetRepository
             .createQueryBuilder('gadgets')
             .leftJoinAndSelect('gadgets.photos', 'photo')
-            // .where('gadgets.userId = :user', { user: user.id })
+            .where('gadgets.userId = :user', { user: user.id })
             .where(`gadgets.id <> :gadgetId`, { gadgetId })
             .andWhere('photo.cover = :cover', { cover }), // load cover photos only
           options,
@@ -433,6 +434,7 @@ export class GadgetsService {
           relations: ['photos'], // load related photo entity
           where: {
             id: Not(gadgetId),
+            user
           },
         });
     } catch (error) {
