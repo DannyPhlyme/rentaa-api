@@ -1,4 +1,4 @@
-import { MinLength, MaxLength } from 'class-validator';
+import { MinLength, MaxLength, IsUUID } from 'class-validator';
 
 /**
  * Represents the form that Review request data takes. Does not map

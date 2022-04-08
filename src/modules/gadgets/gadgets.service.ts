@@ -161,13 +161,13 @@ export class GadgetsService {
    * @param user
    * @returns
    */
-  public async findOne(id: string, user: User) {
+  public async findOne(id: string) {
     try {
       const gadget: Gadget = await this.gadgetRepository.findOne({
         relations: ['photos', 'category', 'user'],
         where: {
           id,
-          user,
+          // user,
         },
       });
 
@@ -393,6 +393,7 @@ export class GadgetsService {
 
   public async viewMoreGadgets(
     // userId: string,
+    user: User,
     gadgetId: string,
     options: IPaginationOptions,
     cover: boolean,
@@ -434,6 +435,7 @@ export class GadgetsService {
           relations: ['photos'], // load related photo entity
           where: {
             id: Not(gadgetId),
+            user,
           },
         });
     } catch (error) {

@@ -20,6 +20,7 @@ export class Gadget extends BaseEntity {
 
   @OneToMany(() => GadgetPhoto, (photo) => photo.gadget, {
     onDelete: 'SET NULL', // fallback for delete
+    eager: true
   })
   photos: GadgetPhoto[];
 
@@ -31,7 +32,7 @@ export class Gadget extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 255,
+    length: 400,
     nullable: true,
   })
   description: string;

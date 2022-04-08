@@ -19,6 +19,8 @@ export class Login {
     try {
       const getUser = await this.userRepo.findOne({ where: { email } });
 
+      console.log(">>>getUser", getUser)
+
       if (!getUser) {
         throw new HttpException(
           `Invalid Login Credentials`,

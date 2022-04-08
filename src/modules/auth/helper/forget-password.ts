@@ -61,9 +61,14 @@ export class ForgotPassword {
       });
 
       await this.tokenRepo.save(tokenInfo);
-
-      await this.emailService.sendMail({
-        data: emailTemplate('forgotPassword', getUser.email),
+      
+      await this.emailService.mailUser({
+        to: getUser.email,
+        subject: `Rentaa: Password Reset`,
+        emailData: {
+          token: newToken.token,
+        },
+        emailTemplate: 'reset-password',
       });
 
       return {
@@ -71,6 +76,7 @@ export class ForgotPassword {
         message: `Successful. A link is sent to your mail to change your password`,
       };
     } catch (e) {
+      console.log("eeeee", e)
       throw new HttpException(
         e.response
           ? e.response

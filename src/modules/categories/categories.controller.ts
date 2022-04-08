@@ -7,11 +7,14 @@ import {
   ParseIntPipe,
   UseGuards,
   ParseUUIDPipe,
+  Body,
+  Post,
 } from '@nestjs/common';
 import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 import { CategoriesService } from './categories.service';
 import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { DEFAULT_UUID } from '../../config/config';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 /**
  * The Category controller class. Responsible for handling incoming category
@@ -37,6 +40,7 @@ export class CategoriesController {
   /**
    * Find all categories controller method
    *
+   * @todo change to 10
    * @param page
    * @param limit
    * @returns

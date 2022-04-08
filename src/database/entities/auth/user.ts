@@ -12,7 +12,7 @@ import { Profile } from './profile';
   name: 'users',
 })
 export class User extends BaseEntity {
-  @OneToOne(() => Profile)
+  @OneToOne(() => Profile, { eager: true })
   @JoinColumn({ name: 'profileId', referencedColumnName: 'id' })
   profile: Profile;
 
@@ -21,7 +21,7 @@ export class User extends BaseEntity {
   })
   histories: LoginHistory[];
 
-  @OneToMany(() => Password, (password) => password.user)
+  @OneToMany(() => Password, (password) => password.user, { eager: true })
   passwords: Password[];
 
   @OneToMany(() => Token, (token) => token.user)

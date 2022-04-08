@@ -24,8 +24,8 @@ export class UpdateUserDto extends PartialType(
   @IsOptional()
   lga?: string;
 
-  @Length(10, 200, {
-    message: 'Description has to be a minimum of 10 characters',
+  @Length(30, 400, {
+    message: 'Description has to be a minimum of 30 characters',
   })
   @IsOptional()
   description?: string;

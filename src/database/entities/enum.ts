@@ -30,6 +30,7 @@ const emailTemplate = (
   emailName: string,
   recipient: string,
   token?: string,
+  first_name?: string,
 ) => {
   switch (emailName) {
     case 'registerEmail':
@@ -57,6 +58,13 @@ const emailTemplate = (
       return {
         msgTo: recipient,
         template: 3731,
+      };
+    case 'rentaa-verify':
+      return {
+        msgTo: recipient,
+        template: 15279,
+        // first_name,
+        // token,
       };
     default:
       return '';

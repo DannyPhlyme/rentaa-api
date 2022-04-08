@@ -48,10 +48,12 @@ export class GadgetsController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
     @Query('cover', new DefaultValuePipe(false), ParseBoolPipe) cover,
+    @Request() request,
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
     return await this.gadgetsService.viewMoreGadgets(
       // userId,
+      <User>request.user,
       gadgetId,
       {
         limit,
@@ -73,7 +75,7 @@ export class GadgetsController {
    */
   @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
+  @UseInterceptors(FilesInterceptor('photos', 5, multerOptions))
   async create(
     @Body() createGadgetDto: CreateGadgetDto,
     @UploadedFiles() photos: Array<Express.Multer.File>,
@@ -137,9 +139,9 @@ export class GadgetsController {
   async findOne(
     @Param('id', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe({}))
     id: string,
-    @Request() request,
+    // @Request() request,
   ) {
-    return await this.gadgetsService.findOne(id, <User>request.user);
+    return await this.gadgetsService.findOne(id);
   }
 
   /**

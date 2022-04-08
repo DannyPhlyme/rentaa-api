@@ -94,30 +94,24 @@ export class Registration {
 
       await this.tokenRepo.save(userToken);
 
-      // await this.mailer.mailUser({
-      //   to: newUser.email,
-      //   subject: `Rentaa: Verify your email`,
-      //   emailData: {
-      //     first_name: newUser.first_name,
-      //     verify_token: emailToken.token,
-      //   },
-      //   emailTemplate: 'verify-email',
-      // });
-      // console.log('process.cwd() registration: ', process.cwd());
-      // await this.mailer.mailUser({
-      //   to: 'dannyopeyemi24@gmail.com',
-      //   subject: `Rentaa: Verify your email`,
-      //   emailData: {
-      //     first_name: 'Sean',
-      //     verify_token: 'djkskjdkd-ajdjandnjadj-ajd',
-      //   },
-      //   emailTemplate: 'verify',
+      // await this.mailer.sendMail({ 
+      //   data: emailTemplate('rentaa-verify', getUser.first_name, emailToken.token),
       // });
 
+      await this.mailer.mailUser({
+        to: newUser.email,
+        subject: `Rentaa: Email Verification`,
+        emailData: {
+          first_name: newUser.first_name,
+          token: emailToken.token
+        },
+        emailTemplate: 'verify-email',
+      });
+
       return {
-        statusCode: 201,
-        user: newUser
+        result: newUser,
       };
+      // return 'ok';
     } catch (e) {
       throw new HttpException(
         e.response

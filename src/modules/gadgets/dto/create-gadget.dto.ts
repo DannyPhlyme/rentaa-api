@@ -3,6 +3,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -24,8 +25,8 @@ export class CreateGadgetDto {
   })
   name: string;
 
-  @MaxLength(250, {
-    message: 'Description has to be a maximum length of 250 characters',
+  @Length(30, 400, {
+    message: 'Description has to be a maximum length of 400 characters',
   })
   @IsOptional()
   description?: string;

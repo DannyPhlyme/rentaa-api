@@ -111,7 +111,12 @@ export class Auth {
         );
       }
 
-      const token = this.jwtService.sign({ user_id: user.id });
+      console.log(">>>>>>user", user.profile.avatarId)
+
+      const token = this.jwtService.sign({
+        user_id: user.id,
+        avatar_id: user.profile.avatarId,
+      });
 
       const userHistory = this.loginHistoryRepo.create({
         login_date: new Date(),
@@ -137,7 +142,7 @@ export class Auth {
           expiry_date: refreshToken.expiry_date,
           is_revoked: refreshToken.is_revoked,
         },
-        user,
+        // user,
       };
     } catch (e) {
       throw new HttpException(
