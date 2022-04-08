@@ -33,7 +33,7 @@ export class ResetPassword {
         relations: ['user'],
       });
 
-      console.log("????????", getResetInfo)
+      console.log(">>>>>getREst", getResetInfo)
 
       if (!getResetInfo) {
         throw new HttpException(
@@ -84,7 +84,7 @@ export class ResetPassword {
         await this.tokenRepo.delete({ token: token });
         throw new HttpException(
           `You're already using this password. Please use a different password`,
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.FORBIDDEN,
         );
       }
 
