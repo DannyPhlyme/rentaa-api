@@ -56,10 +56,10 @@ import * as path from 'path';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB,
-      // ssl: {
-      //   rejectUnauthorized: false,
-      // },
-      // options: {"trustServerCertificate": true},
+      ssl: {
+        rejectUnauthorized: false,
+      },
+      // options: {trustServerCertificate: true},
       entities: ['dist/database/entities/*/*{.ts,.js}'],
       migrations: ['migrations/*{.ts,.js}'],
       synchronize: true,
