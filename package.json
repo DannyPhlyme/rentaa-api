@@ -1,10 +1,14 @@
 {
   "name": "rentaa-api",
   "version": "0.0.1",
-  "description": "",
+  "description": "Rentaa's Backend",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines" : { 
+    "npm" : "8.5.2",
+    "node" : "16.14.0"
+  },
   "scripts": {
     "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
     "prebuild": "rimraf dist",
