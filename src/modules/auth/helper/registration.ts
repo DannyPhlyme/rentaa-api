@@ -94,7 +94,7 @@ export class Registration {
 
       await this.tokenRepo.save(userToken);
 
-      // await this.mailer.sendMail({ 
+      // await this.mailer.sendMail({
       //   data: emailTemplate('rentaa-verify', getUser.first_name, emailToken.token),
       // });
 
@@ -103,7 +103,7 @@ export class Registration {
         subject: `Rentaa: Email Verification`,
         emailData: {
           first_name: newUser.first_name,
-          token: emailToken.token
+          token: emailToken.token,
         },
         emailTemplate: 'verify-email',
       });
@@ -113,6 +113,7 @@ export class Registration {
       };
       // return 'ok';
     } catch (e) {
+      console.log('>>>>>e from register', e);
       throw new HttpException(
         e.response
           ? e.response

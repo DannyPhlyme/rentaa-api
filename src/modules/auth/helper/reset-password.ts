@@ -33,7 +33,7 @@ export class ResetPassword {
         relations: ['user'],
       });
 
-      console.log(">>>>>getREst", getResetInfo)
+      console.log('>>>>>getREst', getResetInfo);
 
       if (!getResetInfo) {
         throw new HttpException(
@@ -60,7 +60,7 @@ export class ResetPassword {
         },
       });
 
-      console.log(">>>>>getUser", getUser)
+      console.log('>>>>>getUser', getUser);
 
       if (!getUser) {
         throw new HttpException(`User Not Found`, HttpStatus.NOT_FOUND);
@@ -73,7 +73,7 @@ export class ResetPassword {
         },
       });
 
-      console.log(">>>>dbPassword", dbPassword)
+      console.log('>>>>dbPassword', dbPassword);
 
       const passwordMatch = bcrypt.compareSync(
         payload.password,
