@@ -86,6 +86,7 @@ export class Auth {
 
   public async authenticateUser(user: User, password: string, ip: string) {
     try {
+      console.log("???????user", user)
       const dbPassword = await this.passwordRepo.findOne({
         where: {
           user: user.id,
@@ -111,8 +112,6 @@ export class Auth {
         );
       }
 
-      console.log(">>>>>>user", user.profile.avatarId)
-
       const token = this.jwtService.sign({
         user_id: user.id,
         avatar_id: user.profile.avatarId,
@@ -130,10 +129,11 @@ export class Auth {
         token: this.generateString(150),
         reason: TokenReason.REFRESH_TOKEN,
         expiry_date: Formatter.calculate_days(7),
-        user: user,
       });
 
       const refreshToken = await this.tokenRepo.save(refreshed);
+
+      console.log('>>>>>>user1', user);
 
       return {
         results: {
@@ -141,8 +141,9 @@ export class Auth {
           refreshToken: refreshToken.token,
           expiry_date: refreshToken.expiry_date,
           is_revoked: refreshToken.is_revoked,
+          // user
         },
-        // user,
+        user,
       };
     } catch (e) {
       throw new HttpException(
