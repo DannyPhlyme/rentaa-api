@@ -111,7 +111,7 @@ export class Auth {
         );
       }
 
-      console.log(">>>>>>user", user.profile.avatarId)
+      // console.log('>>>>>>user', user.profile.avatarId);
 
       const token = this.jwtService.sign({
         user_id: user.id,
@@ -130,10 +130,16 @@ export class Auth {
         token: this.generateString(150),
         reason: TokenReason.REFRESH_TOKEN,
         expiry_date: Formatter.calculate_days(7),
-        user: user,
       });
 
       const refreshToken = await this.tokenRepo.save(refreshed);
+      const {
+        first_name,
+        last_name,
+        profile: { phone_number },
+      } = user;
+
+      const userData = { first_name, last_name, phone_number };
 
       return {
         results: {
@@ -142,7 +148,7 @@ export class Auth {
           expiry_date: refreshToken.expiry_date,
           is_revoked: refreshToken.is_revoked,
         },
-        // user,
+        userData,
       };
     } catch (e) {
       throw new HttpException(
