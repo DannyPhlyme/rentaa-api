@@ -28,6 +28,9 @@ export class CreateGadgetDto {
   @Length(30, 400, {
     message: 'Description has to be a maximum length of 400 characters',
   })
+  // @MinLength(3, {
+  //   message: 'Please provide a valid desc',
+  // })
   @IsOptional()
   description?: string;
 

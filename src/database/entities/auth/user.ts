@@ -21,7 +21,7 @@ export class User extends BaseEntity {
   })
   histories: LoginHistory[];
 
-  @OneToMany(() => Password, (password) => password.user, { eager: true })
+  @OneToMany(() => Password, (password) => password.user, { eager: false })
   passwords: Password[];
 
   @OneToMany(() => Token, (token) => token.user)

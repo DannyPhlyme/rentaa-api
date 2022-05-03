@@ -50,6 +50,7 @@ import * as path from 'path';
     CategoriesModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
+      // type: 'mysql',
       type: 'postgres',
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),

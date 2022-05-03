@@ -38,11 +38,22 @@ import { DEFAULT_UUID } from '../../config/config';
  */
 @Controller('gadgets')
 export class GadgetsController {
-  constructor(private readonly gadgetsService: GadgetsService) {}
+  constructor(private readonly gadgetsService: GadgetsService) { }
 
+  /**
+   * 
+   * @param userId 
+   * @param gadgetId 
+   * @param page 
+   * @param limit 
+   * @param cover 
+   * @param request 
+   * @returns 
+   */
+  @UseGuards(JwtAuthGuard)
   @Get('view-more')
   async viewMoreGadgets(
-    // @Query('userID', new DefaultValuePipe(DEFAULT_UUID), ParseUUIDPipe) userId,
+    @Query('userID', new DefaultValuePipe(DEFAULT_UUID), ParseUUIDPipe) userId,
     @Query('gadgetID', new DefaultValuePipe(DEFAULT_UUID), ParseUUIDPipe)
     gadgetId,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
@@ -52,7 +63,7 @@ export class GadgetsController {
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
     return await this.gadgetsService.viewMoreGadgets(
-      // userId,
+      userId,
       <User>request.user,
       gadgetId,
       {
