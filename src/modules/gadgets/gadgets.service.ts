@@ -193,8 +193,8 @@ export class GadgetsService {
    *
    * @param id unique id of the gadget to be updated
    * @param updateGadgetDto
-   * @todo Fix params error for update method
-   * @todo Users should also be able to update photos of gadgets
+   * @todo Write job to delete photo from aws when delete date equals 1 day
+   * @todo Modularize update gadget method
    */
   public async update(
     id: string,
@@ -202,6 +202,7 @@ export class GadgetsService {
     updateGadgetDto: UpdateGadgetDto,
     photoDtoArray: Array<CreatePhotoDto>,
     photoIds: string[],
+    deletePhotoIds: string[],
   ) {
     try {
       let gadget: Gadget = await this.gadgetRepository.findOne({ id, user });
@@ -260,6 +261,38 @@ export class GadgetsService {
         photos.forEach(async (photo) => {
           await this.photoRepository.update(photo.id, photo);
         });
+      }
+
+      if (deletePhotoIds != undefined && deletePhotoIds.length != 0) {
+        const MIN_PHOTO = Number(process.env.MIN_PHOTO);
+
+        const totalPhotos: number = await this.photoRepository.count({
+          where: { gadget },
+        });
+
+        // console.log(
+        //   `totalPhotos: ${totalPhotos}, deletePhotoIds: ${deletePhotoIds.length}`,
+        // );
+
+        if (totalPhotos - deletePhotoIds.length < MIN_PHOTO)
+          throw new HttpException(
+            `Cannot delete photos: Total photo count less than minimum photo specified`,
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+
+        for (let photoId = 0; photoId < deletePhotoIds.length; photoId++) {
+          const photo: GadgetPhoto = await this.photoRepository.findOne(
+            deletePhotoIds[photoId],
+          );
+
+          if (!photo)
+            throw new HttpException(
+              `Trying to delete photo...Photo of id (${deletePhotoIds[photoId]}) does not exist`,
+              HttpStatus.NOT_FOUND,
+            );
+
+          await this.photoRepository.softDelete(photo.id);
+        }
       }
 
       if (!(typeof updateGadgetDto.category === 'object'))
@@ -475,7 +508,7 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
-      console.log('>>>error', error);
+      // console.log('>>>error', error);
       throw new Error('An error occured');
     }
   }

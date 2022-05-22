@@ -18,6 +18,8 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/config';
@@ -38,17 +40,17 @@ import { DEFAULT_UUID } from '../../config/config';
  */
 @Controller('gadgets')
 export class GadgetsController {
-  constructor(private readonly gadgetsService: GadgetsService) { }
+  constructor(private readonly gadgetsService: GadgetsService) {}
 
   /**
-   * 
-   * @param userId 
-   * @param gadgetId 
-   * @param page 
-   * @param limit 
-   * @param cover 
-   * @param request 
-   * @returns 
+   *
+   * @param userId
+   * @param gadgetId
+   * @param page
+   * @param limit
+   * @param cover
+   * @param request
+   * @returns
    */
   @UseGuards(JwtAuthGuard)
   @Get('view-more')
@@ -94,8 +96,14 @@ export class GadgetsController {
   ) {
     if (photos.length == 0)
       throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
+    else if (photos.length < Number(process.env.MIN_PHOTO))
+      throw new HttpException(
+        `Photo uploaded should not be less than ${process.env.MIN_PHOTO}`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
 
     const photoDtoArray: Array<CreatePhotoDto> = []; // empty photoDto array
+
     photos.forEach((photo) => {
       const obj = { cover: false, bucketname: null, key: null };
       photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties to new object and push to photoDto array
@@ -163,6 +171,7 @@ export class GadgetsController {
    * @param updateGadgetDto
    * @returns
    */
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
@@ -178,6 +187,11 @@ export class GadgetsController {
       new ParseArrayPipe({ items: String, separator: ',', optional: true }),
     )
     photoIds: string[],
+    @Query(
+      'delete_ids',
+      new ParseArrayPipe({ items: String, separator: ',', optional: true }),
+    )
+    delete_ids: string[],
   ) {
     // console.log(photos);
     if (photos.length != 0) {
@@ -206,6 +220,7 @@ export class GadgetsController {
       JSON.parse(JSON.stringify(updateGadgetDto)), // parse the request body
       photoDtoArray,
       photoIds,
+      delete_ids,
     );
   }
 
