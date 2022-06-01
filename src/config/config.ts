@@ -3,7 +3,7 @@ import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer
 import { extname } from 'path';
 
 const fileFilter = (req: any, photo: Express.Multer.File, cb) => {
-  if (photo.mimetype.match(/\/(jpg|jpeg)$/)) cb(null, true);
+  if (photo.mimetype.match(/\/(jpg|jpeg|png)$/)) cb(null, true);
   else
     cb(
       new HttpException(

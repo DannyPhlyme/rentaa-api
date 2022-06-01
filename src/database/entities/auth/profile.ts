@@ -17,7 +17,7 @@ export class Profile extends BaseEntity {
   })
   reviews: Review[];
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   avatarId?: string; // id of the avatar. this increases performance
 
   @Column({
@@ -42,7 +42,7 @@ export class Profile extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 255,
+    length: 400,
     nullable: true,
   })
   description: string; // describe yourself

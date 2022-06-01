@@ -68,11 +68,18 @@ export class ResendToken {
         expiry_date: Formatter.calculate_days(7),
       });
 
-      await this.emailService.sendMail({
-        data: emailTemplate('verificationEmail', get_user.email),
-      });
 
       await this.TokenRepo.save(tokenInfo);
+
+      await this.emailService.mailUser({
+        to: get_user.email,
+        subject: `Rentaa: Email Verification`,
+        emailData: {
+          first_name: get_user.first_name,
+          token: email_token.token,
+        },
+        emailTemplate: 'verify-email',
+      });
 
       return {
         message: `Email verification has been sent`,
@@ -138,10 +145,13 @@ export class ResendToken {
       await this.TokenRepo.save(getRefreshToken);
 
       return {
-        token: accessToken,
-        refresh_token: tokenRefreshed.token,
-        expiry_date: tokenRefreshed.expiry_date,
-        is_revoked: tokenRefreshed.is_revoked,
+        statusCode: 201,
+        message: {
+          token: accessToken,
+          refresh_token: tokenRefreshed.token,
+          expiry_date: tokenRefreshed.expiry_date,
+          is_revoked: tokenRefreshed.is_revoked,
+        },
       };
     } catch (e) {
       throw new HttpException(

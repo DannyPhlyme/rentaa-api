@@ -1,7 +1,5 @@
-import { Entity, Column, OneToOne } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { BaseEntity } from '../base';
-import { Profile } from './profile';
-
 @Entity({
   name: 'avatars',
 })
@@ -15,8 +13,12 @@ export class Avatar extends BaseEntity {
   })
   originalname: string;
 
+  /**
+   * @todo change type to bytea for postgres
+   */
   @Column({
     type: 'longblob',
+    // type: 'bytea',
     nullable: true,
   })
   data: Uint8Array;

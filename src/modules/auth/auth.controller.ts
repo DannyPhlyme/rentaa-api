@@ -29,6 +29,7 @@ export class AuthController {
     return this.authService.refreshToken(refresh_token);
   }
 
+  // according to sean reset password is change password
   @Post('/reset-password/:token')
   resetPassword(
     @Param('token') token: string,

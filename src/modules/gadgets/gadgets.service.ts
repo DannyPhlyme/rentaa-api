@@ -3,7 +3,7 @@ import { CreateGadgetDto } from './dto/create-gadget.dto';
 import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { Gadget } from '../../database/entities/gadgets/gadget';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { Category } from '../../database/entities/gadgets/category';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
 import { s3Client } from 'src/providers/aws/clients/S3';
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import SearchService from '../search/search.service';
 
 @Injectable()
 export class GadgetsService {
@@ -27,6 +28,8 @@ export class GadgetsService {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    private searchService: SearchService,
   ) {}
 
   /**
@@ -43,20 +46,20 @@ export class GadgetsService {
     user: User,
   ) {
     try {
-      const {
-        name,
-        description,
-        condition,
-        price,
-        state,
-        lga,
-        contact_info,
-        categoryId,
-      } = createGadgetDto;
+      // const {
+      //   name,
+      //   description,
+      //   condition,
+      //   price,
+      //   state,
+      //   lga,
+      //   contact_info,
+      //   categoryId,
+      // } = createGadgetDto;
 
       const category: Category = await this.categoryRepository.findOne({
         where: {
-          id: categoryId,
+          id: createGadgetDto.categoryId,
         },
       });
 
@@ -67,13 +70,7 @@ export class GadgetsService {
         );
 
       let gadget: Gadget = this.gadgetRepository.create({
-        name,
-        description,
-        condition,
-        price,
-        state,
-        lga,
-        contact_info,
+        ...createGadgetDto,
         category,
         user,
       });
@@ -88,13 +85,16 @@ export class GadgetsService {
 
         gadget = await this.gadgetRepository.save(gadget);
 
+        // this.searchService.indexGadget(gadget); // index gadget in elastic search
+
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
         await this.photoRepository.save(photo);
       }
 
       return {
-        item: gadget,
+        status: 201,
+        data: gadget,
       };
     } catch (error) {
       throw new HttpException(
@@ -160,13 +160,13 @@ export class GadgetsService {
    * @param user
    * @returns
    */
-  public async findOne(id: string, user: User) {
+  public async findOne(id: string) {
     try {
       const gadget: Gadget = await this.gadgetRepository.findOne({
         relations: ['photos', 'category', 'user'],
         where: {
           id,
-          user,
+          // user,
         },
       });
 
@@ -192,8 +192,8 @@ export class GadgetsService {
    *
    * @param id unique id of the gadget to be updated
    * @param updateGadgetDto
-   * @todo Fix params error for update method
-   * @todo Users should also be able to update photos of gadgets
+   * @todo Write job to delete photo from aws when delete date equals 1 day
+   * @todo Modularize update gadget method
    */
   public async update(
     id: string,
@@ -201,6 +201,7 @@ export class GadgetsService {
     updateGadgetDto: UpdateGadgetDto,
     photoDtoArray: Array<CreatePhotoDto>,
     photoIds: string[],
+    deletePhotoIds: string[],
   ) {
     try {
       let gadget: Gadget = await this.gadgetRepository.findOne({ id, user });
@@ -259,6 +260,38 @@ export class GadgetsService {
         photos.forEach(async (photo) => {
           await this.photoRepository.update(photo.id, photo);
         });
+      }
+
+      if (deletePhotoIds != undefined && deletePhotoIds.length != 0) {
+        const MIN_PHOTO = Number(process.env.MIN_PHOTO);
+
+        const totalPhotos: number = await this.photoRepository.count({
+          where: { gadget },
+        });
+
+        // console.log(
+        //   `totalPhotos: ${totalPhotos}, deletePhotoIds: ${deletePhotoIds.length}`,
+        // );
+
+        if (totalPhotos - deletePhotoIds.length < MIN_PHOTO)
+          throw new HttpException(
+            `Cannot delete photos: Total photo count less than minimum photo specified`,
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+
+        for (let photoId = 0; photoId < deletePhotoIds.length; photoId++) {
+          const photo: GadgetPhoto = await this.photoRepository.findOne(
+            deletePhotoIds[photoId],
+          );
+
+          if (!photo)
+            throw new HttpException(
+              `Trying to delete photo...Photo of id (${deletePhotoIds[photoId]}) does not exist`,
+              HttpStatus.NOT_FOUND,
+            );
+
+          await this.photoRepository.softDelete(photo.id);
+        }
       }
 
       if (!(typeof updateGadgetDto.category === 'object'))
@@ -390,8 +423,19 @@ export class GadgetsService {
     }
   }
 
+  /**
+   * View more gadgets service method.
+   *
+   * @param userId
+   * @param user
+   * @param gadgetId
+   * @param options
+   * @param cover
+   * @returns
+   */
   public async viewMoreGadgets(
-    // userId: string,
+    userId: string,
+    user: User,
     gadgetId: string,
     options: IPaginationOptions,
     cover: boolean,
@@ -410,8 +454,8 @@ export class GadgetsService {
           this.gadgetRepository
             .createQueryBuilder('gadgets')
             .leftJoinAndSelect('gadgets.photos', 'photo')
-            // .where('gadgets.userId = :user', { user: user.id })
-            .where(`gadgets.id <> :gadgetId`, { gadgetId })
+            .where('gadgets.userId = :user', { user: userId })
+            .andWhere(`gadgets.id <> :gadgetId`, { gadgetId })
             .andWhere('photo.cover = :cover', { cover }), // load cover photos only
           options,
         );
@@ -433,6 +477,8 @@ export class GadgetsService {
           relations: ['photos'], // load related photo entity
           where: {
             id: Not(gadgetId),
+            // user,
+            user: await this.userRepository.findOne(userId),
           },
         });
     } catch (error) {
@@ -444,6 +490,28 @@ export class GadgetsService {
       );
     }
   }
+
+  /**
+   * Method searches for a gadget based on a given text
+   *
+   * @param text
+   * @returns
+   */
+  // public async searchGadgets(text: string) {
+  //   const results = await this.searchService.search(text);
+
+  //   const ids = results.map((result) =>
+  //     result.hits.hits.map(
+  //       (result: { _source: { id: any } }) => result._source.id,
+  //     ),
+  //   );
+
+  //   if (!ids.length) return [];
+
+  //   return this.gadgetRepository.find({
+  //     where: { id: In(ids) },
+  //   });
+  // }
 
   /**
    * Utility method to upload photo to Amazon S3
@@ -471,7 +539,7 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
-      console.log(error);
+      // console.log('>>>error', error);
       throw new Error('An error occured');
     }
   }
@@ -499,7 +567,8 @@ export class GadgetsService {
   }
 
   /**
-   * @todo make some query parmas optional
+   * @todo Write a job to delete images from Amazon s3 based on
+   * a set of criteria
    * @param key
    * @returns
    */

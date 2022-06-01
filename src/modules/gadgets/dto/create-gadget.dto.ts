@@ -3,7 +3,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  MaxLength,
+  Length,
   MinLength,
 } from 'class-validator';
 import { GadgetCondition } from 'src/database/entities/enum';
@@ -11,6 +11,8 @@ import { IsValidPrice } from '../../../validators/is-valid-price.validator';
 import { IsValidPhoneNumber } from '../../../validators/is-valid-phone-number';
 import { Category } from 'src/database/entities/gadgets/category';
 import { GadgetPhoto } from '../../../database/entities/gadgets/gadget-photo';
+
+// STB-MIS-SVR02\SQLEXPRESS
 
 /**
  * Represents the form that Gadget request data takes. Does not map
@@ -24,8 +26,11 @@ export class CreateGadgetDto {
   })
   name: string;
 
-  @MaxLength(250, {
-    message: 'Description has to be a maximum length of 250 characters',
+  // @Length(30, 400, {
+  //   message: 'Description has to be a maximum length of 400 characters',
+  // })
+  @MinLength(3, {
+    message: 'Please provide a valid desc',
   })
   @IsOptional()
   description?: string;
@@ -52,7 +57,7 @@ export class CreateGadgetDto {
   lga: string;
 
   @IsValidPhoneNumber({
-    message: 'Please provide a vallid phone number',
+    message: 'Please provide a valid phone number',
   })
   contact_info: string;
 

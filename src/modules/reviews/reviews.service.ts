@@ -22,6 +22,7 @@ export class ReviewsService {
   ) {}
 
   /**
+   * @todo look into profile showing null in db
    * Leave review service method. This method creates a new review
    *
    * @param createReviewDto
@@ -62,14 +63,18 @@ export class ReviewsService {
           HttpStatus.BAD_REQUEST,
         );
 
+      const avatarId = profile.avatarId;
+
       const userReview: Review = this.reviewRepository.create({
         review,
         reviewer,
+        avatarId,
         profile,
       });
-      await this.reviewRepository.save(userReview);
 
       await this.profileRepository.save(profile);
+
+      await this.reviewRepository.save(userReview);
 
       profile = await this.profileRepository.findOne({
         relations: ['reviews'],
@@ -80,8 +85,10 @@ export class ReviewsService {
 
       return {
         item: profile,
+        message: 'Thank you for leaving a review',
       };
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         error.response
           ? error.response

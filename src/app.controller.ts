@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import * as path from 'path';
 
 @Controller()
 export class AppController {
@@ -19,5 +20,11 @@ export class AppController {
   @Get('template')
   sendMail() {
     return this.appService.example();
+  }
+
+  @Get('hello')
+  getHello() {
+    // console.log(path.join(__dirname, '..', 'assets'));
+    return 'hello';
   }
 }

@@ -18,6 +18,8 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/config/config';
@@ -40,18 +42,31 @@ import { DEFAULT_UUID } from '../../config/config';
 export class GadgetsController {
   constructor(private readonly gadgetsService: GadgetsService) {}
 
+  /**
+   *
+   * @param userId
+   * @param gadgetId
+   * @param page
+   * @param limit
+   * @param cover
+   * @param request
+   * @returns
+   */
+  @UseGuards(JwtAuthGuard)
   @Get('view-more')
   async viewMoreGadgets(
-    // @Query('userID', new DefaultValuePipe(DEFAULT_UUID), ParseUUIDPipe) userId,
+    @Query('userID', new DefaultValuePipe(DEFAULT_UUID), ParseUUIDPipe) userId,
     @Query('gadgetID', new DefaultValuePipe(DEFAULT_UUID), ParseUUIDPipe)
     gadgetId,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
     @Query('cover', new DefaultValuePipe(false), ParseBoolPipe) cover,
+    @Request() request,
   ) {
     limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
     return await this.gadgetsService.viewMoreGadgets(
-      // userId,
+      userId,
+      <User>request.user,
       gadgetId,
       {
         limit,
@@ -73,7 +88,7 @@ export class GadgetsController {
    */
   @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
+  @UseInterceptors(FilesInterceptor('photos', 5, multerOptions))
   async create(
     @Body() createGadgetDto: CreateGadgetDto,
     @UploadedFiles() photos: Array<Express.Multer.File>,
@@ -81,8 +96,14 @@ export class GadgetsController {
   ) {
     if (photos.length == 0)
       throw new HttpException('No photo uploaded', HttpStatus.BAD_REQUEST);
+    else if (photos.length < Number(process.env.MIN_PHOTO))
+      throw new HttpException(
+        `Photo uploaded should not be less than ${process.env.MIN_PHOTO}`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
 
     const photoDtoArray: Array<CreatePhotoDto> = []; // empty photoDto array
+
     photos.forEach((photo) => {
       const obj = { cover: false, bucketname: null, key: null };
       photoDtoArray.push(Object.assign(obj, photo)); // clone all photo properties to new object and push to photoDto array
@@ -109,10 +130,10 @@ export class GadgetsController {
   async findAll(
     @Request() request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit = 20,
     @Query('cover', new DefaultValuePipe(false), ParseBoolPipe) cover,
   ) {
-    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    limit = limit > 20 ? 20 : limit; // can't exceed 2 items per page
     return await this.gadgetsService.findAll(
       <User>request.user,
       {
@@ -137,9 +158,9 @@ export class GadgetsController {
   async findOne(
     @Param('id', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe({}))
     id: string,
-    @Request() request,
+    // @Request() request,
   ) {
-    return await this.gadgetsService.findOne(id, <User>request.user);
+    return await this.gadgetsService.findOne(id);
   }
 
   /**
@@ -150,6 +171,7 @@ export class GadgetsController {
    * @param updateGadgetDto
    * @returns
    */
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('photos', 3, multerOptions))
@@ -165,6 +187,11 @@ export class GadgetsController {
       new ParseArrayPipe({ items: String, separator: ',', optional: true }),
     )
     photoIds: string[],
+    @Query(
+      'delete_ids',
+      new ParseArrayPipe({ items: String, separator: ',', optional: true }),
+    )
+    delete_ids: string[],
   ) {
     // console.log(photos);
     if (photos.length != 0) {
@@ -193,6 +220,7 @@ export class GadgetsController {
       JSON.parse(JSON.stringify(updateGadgetDto)), // parse the request body
       photoDtoArray,
       photoIds,
+      delete_ids,
     );
   }
 
@@ -221,6 +249,11 @@ export class GadgetsController {
   async restore(@Param('id') id: string, @Request() request) {
     return await this.gadgetsService.restore(id, <User>request.user);
   }
+
+  // @Get('search')
+  // async searchGadgets(@Query('search') search: string) {
+  //   if (search) return await this.gadgetsService.searchGadgets(search);
+  // }
 
   /**
    * Utility method

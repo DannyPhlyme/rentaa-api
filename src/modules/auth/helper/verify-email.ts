@@ -64,6 +64,7 @@ export class VerifyEmail {
       // fire an event activity
 
       return {
+        status: 200,
         message: `Email Verification Successful`,
       };
     } catch (e) {

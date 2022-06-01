@@ -4,6 +4,7 @@
  *
  * @class
  */
+
 export class CreatePhotoDto {
   originalname: string;
 

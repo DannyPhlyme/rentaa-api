@@ -7,11 +7,14 @@ import {
   ParseIntPipe,
   UseGuards,
   ParseUUIDPipe,
+  Body,
+  Post,
 } from '@nestjs/common';
 import { PaginationTypeEnum } from 'nestjs-typeorm-paginate';
 import { CategoriesService } from './categories.service';
 import { JwtAuthGuard } from '../auth/helper/jwt-auth.guard';
 import { DEFAULT_UUID } from '../../config/config';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 /**
  * The Category controller class. Responsible for handling incoming category
@@ -37,6 +40,7 @@ export class CategoriesController {
   /**
    * Find all categories controller method
    *
+   * @todo change to 10
    * @param page
    * @param limit
    * @returns
@@ -45,9 +49,9 @@ export class CategoriesController {
   @Get()
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
   ) {
-    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    limit = limit > 10 ? 10 : limit; // can't exceed 2 items per page
     return await this.categoriesService.findAll({
       limit,
       page,
@@ -85,9 +89,9 @@ export class CategoriesController {
     @Param('id', new DefaultValuePipe(DEFAULT_UUID), new ParseUUIDPipe({}))
     id: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 2,
+    @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit = 6,
   ) {
-    limit = limit > 2 ? 2 : limit; // can't exceed 2 items per page
+    limit = limit > 6 ? 6 : limit; // can't exceed 2 items per page
     return await this.categoriesService.findGadgetsByCategory(id, {
       limit,
       page,
