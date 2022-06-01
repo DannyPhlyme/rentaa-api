@@ -105,7 +105,7 @@ export class Registration {
       // });
       // console.log('process.cwd() registration: ', process.cwd());
       await this.mailer.mailUser({
-        to: 'dannyopeyemi24@gmail.com',
+        to: 'dannyopeyemi@gmail.com',
         subject: `Rentaa: Verify your email`,
         emailData: {
           first_name: 'Sean',
