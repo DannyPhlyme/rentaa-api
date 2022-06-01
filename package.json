@@ -5,10 +5,6 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "engines": {
-    "npm": "8.5.2",
-    "node": "16.14.0"
-  },
   "scripts": {
     "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
     "prebuild": "rimraf dist",

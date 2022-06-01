@@ -16,7 +16,7 @@ import { Gadget } from './database/entities/gadgets/gadget';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 // import { MailModule } from './modules/mail/mail.module';
-import { SearchModule } from './modules/search/search.module';
+// import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -52,11 +52,16 @@ import { SearchModule } from './modules/search/search.module';
     TypeOrmModule.forRoot({
       type: 'mysql',
       // type: 'postgres',
+      // host: process.env.DB_HOST,
+      // port: Number(process.env.DB_PORT),
+      // username: process.env.DB_USERNAME,
+      // password: process.env.DB_PASSWORD,
+      // database: process.env.DB,
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB,
+      username: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DATABASE,
       ssl: {
         rejectUnauthorized: false,
       },

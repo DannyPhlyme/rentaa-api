@@ -85,7 +85,7 @@ export class GadgetsService {
 
         gadget = await this.gadgetRepository.save(gadget);
 
-        this.searchService.indexGadget(gadget); // index gadget in elastic search
+        // this.searchService.indexGadget(gadget); // index gadget in elastic search
 
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
@@ -497,21 +497,21 @@ export class GadgetsService {
    * @param text
    * @returns
    */
-  public async searchGadgets(text: string) {
-    const results = await this.searchService.search(text);
+  // public async searchGadgets(text: string) {
+  //   const results = await this.searchService.search(text);
 
-    const ids = results.map((result) =>
-      result.hits.hits.map(
-        (result: { _source: { id: any } }) => result._source.id,
-      ),
-    );
+  //   const ids = results.map((result) =>
+  //     result.hits.hits.map(
+  //       (result: { _source: { id: any } }) => result._source.id,
+  //     ),
+  //   );
 
-    if (!ids.length) return [];
+  //   if (!ids.length) return [];
 
-    return this.gadgetRepository.find({
-      where: { id: In(ids) },
-    });
-  }
+  //   return this.gadgetRepository.find({
+  //     where: { id: In(ids) },
+  //   });
+  // }
 
   /**
    * Utility method to upload photo to Amazon S3

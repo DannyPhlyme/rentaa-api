@@ -2,7 +2,6 @@
 version: '3.7'
 
 services:
- 
   # Application service
   rentaa-app:
     depends_on:
@@ -11,67 +10,46 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: rentaa-app:v1
-    # container name
-    container_name: rentaa-app
+    image: rentaa-app
+    container_name: rentaa
     # always restart the container if it stops.
     restart: always
     # docker run -t is allow
     tty: true
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
-    # working directory
-    working_dir: /var/app/rentaa
-    # application environment
+      - "${SERVICE_PORT}:${APP_PORT}"
+    working_dir: /home/rentaa-admin/rentaa-app
     environment:
       SERVICE_NAME: rentaa-app
       SERVICE_TAGS: dev
       SERVICE_DB_HOST: ${DB_HOST}:${DB_PORT}
       SERVICE_DB_USER: ${DB_USERNAME}
       SERVICE_DB_PASSWORD: ${DB_PASSWORD}
-    # save (persist) data and also share data between containers
     volumes:
-      - ./:/var/app/rentaa
-      - /var/app/rentaa/node_modules
+      - rentaa_data:/app/data
+      # - ./:/var/app/rentaa
+      # - /var/app/rentaa/node_modules
     # application network, each container for a service joins this network
-    networks:
-      - rentaa-app-network
-  
-  # Database service
-  postgres:
-    container_name: postgres
-    image: postgres:latest # use latest only in development
-    ports:
-      - "5432:5432"
-    volumes:
-      #- /data/postgres:/data/postgres
-      - /var/lib/postgres/data:/usr/local/share/postgres/data
-      #  - local_pgdata:/var/lib/postgresql/data
-    env_file:
-      - docker.env
-    networks:
-      - postgres
- 
-  pgadmin:
-    links:
-      - postgres:postgres
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    ports:
-      - "8080:80"
-    volumes:
-      - /var/lib/pgadmin/data:/usr/local/share/.pgadmin
-      # - pgadmin-data:/var/lib/pgadmin
-    env_file:
-      - docker.env
-    networks:
-      - postgres
 
-# Docker Networks
+    networks:
+      - rentaa-network
+
+  mysql-db:
+    image: mysql:8
+    container_name: rentaa-db
+    ports:
+      - "3305:3306"
+    restart: always
+    env_file:
+      - docker.env  
+    volumes:
+      - rentaa_db_data:/var/lib/mysql
+    networks:
+      - rentaa-network
+
 networks:
-  # All container connect in a network
-  nest-demo-network:
+  rentaa-network:
     driver: bridge
-# save (persist) data
 volumes:
-  db_data: {}
+  rentaa_db_data:
+  rentaa_data:

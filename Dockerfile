@@ -1,4 +1,4 @@
-FROM node:10-alpine
+FROM node:16-alpine3.14
 
 # Install PM2
 RUN npm install -g pm2
@@ -21,6 +21,9 @@ RUN mkdir -p /home/rentaa-admin/rentaa-app
 # Set working directory
 WORKDIR /home/rentaa-admin/rentaa-app
 
+# RUN rm -rf node_modules package-lock.json
+RUN rm -rf node_modules
+
 # Add `/usr/src/app/node_modules/.bin` to $PATH
 ENV PATH /home/rentaa-admin/rentaa-app/node_modules/.bin:$PATH
 
@@ -32,7 +35,7 @@ COPY package.json /home/rentaa-admin/rentaa-app/package.json
 COPY package-lock.json /home/rentaa-admin/rentaa-app/package-lock.json
 
 # Grant permission to the application
-RUN chown -R root:root /home/rentaa-admin/rentaa-app
+RUN chown -R rentaa-admin:rentaa-admin /home/rentaa-admin/rentaa-app
 USER rentaa-admin
 
 # Clear application caching
