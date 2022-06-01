@@ -5,9 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "engines" : { 
-    "npm" : "8.5.2",
-    "node" : "16.14.0"
+  "engines": {
+    "npm": "8.5.2",
+    "node": "16.14.0"
   },
   "scripts": {
     "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
@@ -30,10 +30,13 @@
     "@aws-sdk/client-ses": "^3.54.1",
     "@aws-sdk/node-http-handler": "^3.40.0",
     "@aws-sdk/types": "^3.40.0",
+    "@elastic/elasticsearch": "^8.2.1",
+    "@hapi/joi": "^17.1.1",
     "@nestjs-modules/mailer": "^1.6.1",
     "@nestjs/common": "^8.2.4",
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.2.4",
+    "@nestjs/elasticsearch": "^8.1.0",
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mapped-types": "^1.0.1",
     "@nestjs/passport": "^8.0.1",
@@ -41,6 +44,7 @@
     "@nestjs/swagger": "^5.1.5",
     "@nestjs/typeorm": "^8.0.2",
     "@sendgrid/mail": "^7.6.1",
+    "@types/hapi__joi": "^17.1.8",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",

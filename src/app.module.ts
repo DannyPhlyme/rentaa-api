@@ -14,10 +14,9 @@ import { CategoriesService } from './modules/categories/categories.service';
 import { Category } from './database/entities/gadgets/category';
 import { Gadget } from './database/entities/gadgets/gadget';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
-import * as path from 'path';
 // import { MailModule } from './modules/mail/mail.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -48,6 +47,7 @@ import * as path from 'path';
     GadgetsModule,
     ReviewsModule,
     CategoriesModule,
+    // SearchModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',

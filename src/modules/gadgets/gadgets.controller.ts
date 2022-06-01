@@ -250,6 +250,11 @@ export class GadgetsController {
     return await this.gadgetsService.restore(id, <User>request.user);
   }
 
+  @Get('search')
+  async searchGadgets(@Query('search') search: string) {
+    if (search) return await this.gadgetsService.searchGadgets(search);
+  }
+
   /**
    * Utility method
    *

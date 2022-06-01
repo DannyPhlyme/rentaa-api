@@ -20,7 +20,7 @@ export class Gadget extends BaseEntity {
 
   @OneToMany(() => GadgetPhoto, (photo) => photo.gadget, {
     onDelete: 'SET NULL', // fallback for delete
-    eager: true
+    eager: true,
   })
   photos: GadgetPhoto[];
 

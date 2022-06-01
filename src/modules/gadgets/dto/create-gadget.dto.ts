@@ -4,7 +4,6 @@ import {
   IsString,
   IsUUID,
   Length,
-  MaxLength,
   MinLength,
 } from 'class-validator';
 import { GadgetCondition } from 'src/database/entities/enum';
@@ -12,6 +11,8 @@ import { IsValidPrice } from '../../../validators/is-valid-price.validator';
 import { IsValidPhoneNumber } from '../../../validators/is-valid-phone-number';
 import { Category } from 'src/database/entities/gadgets/category';
 import { GadgetPhoto } from '../../../database/entities/gadgets/gadget-photo';
+
+// STB-MIS-SVR02\SQLEXPRESS
 
 /**
  * Represents the form that Gadget request data takes. Does not map

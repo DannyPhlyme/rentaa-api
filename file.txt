@@ -8,3 +8,7 @@ insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3
 insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d8', 'Laptop/PCs', 'laptop/PCs');
 insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d8', 'Others', 'others');
 
+
+
+DOWNLOAD NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash

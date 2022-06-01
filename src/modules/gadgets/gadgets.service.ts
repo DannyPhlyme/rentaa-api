@@ -3,7 +3,7 @@ import { CreateGadgetDto } from './dto/create-gadget.dto';
 import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { Gadget } from '../../database/entities/gadgets/gadget';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { Category } from '../../database/entities/gadgets/category';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
 import { s3Client } from 'src/providers/aws/clients/S3';
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import SearchService from '../search/search.service';
 
 @Injectable()
 export class GadgetsService {
@@ -27,6 +28,8 @@ export class GadgetsService {
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    private searchService: SearchService,
   ) {}
 
   /**
@@ -43,20 +46,20 @@ export class GadgetsService {
     user: User,
   ) {
     try {
-      const {
-        name,
-        description,
-        condition,
-        price,
-        state,
-        lga,
-        contact_info,
-        categoryId,
-      } = createGadgetDto;
+      // const {
+      //   name,
+      //   description,
+      //   condition,
+      //   price,
+      //   state,
+      //   lga,
+      //   contact_info,
+      //   categoryId,
+      // } = createGadgetDto;
 
       const category: Category = await this.categoryRepository.findOne({
         where: {
-          id: categoryId,
+          id: createGadgetDto.categoryId,
         },
       });
 
@@ -67,13 +70,7 @@ export class GadgetsService {
         );
 
       let gadget: Gadget = this.gadgetRepository.create({
-        name,
-        description,
-        condition,
-        price,
-        state,
-        lga,
-        contact_info,
+        ...createGadgetDto,
         category,
         user,
       });
@@ -87,6 +84,8 @@ export class GadgetsService {
         photoDto.bucketname = (await result).Bucket;
 
         gadget = await this.gadgetRepository.save(gadget);
+
+        this.searchService.indexGadget(gadget); // index gadget in elastic search
 
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
@@ -424,6 +423,16 @@ export class GadgetsService {
     }
   }
 
+  /**
+   * View more gadgets service method.
+   *
+   * @param userId
+   * @param user
+   * @param gadgetId
+   * @param options
+   * @param cover
+   * @returns
+   */
   public async viewMoreGadgets(
     userId: string,
     user: User,
@@ -483,6 +492,28 @@ export class GadgetsService {
   }
 
   /**
+   * Method searches for a gadget based on a given text
+   *
+   * @param text
+   * @returns
+   */
+  public async searchGadgets(text: string) {
+    const results = await this.searchService.search(text);
+
+    const ids = results.map((result) =>
+      result.hits.hits.map(
+        (result: { _source: { id: any } }) => result._source.id,
+      ),
+    );
+
+    if (!ids.length) return [];
+
+    return this.gadgetRepository.find({
+      where: { id: In(ids) },
+    });
+  }
+
+  /**
    * Utility method to upload photo to Amazon S3
    * @param dataBuffer
    * @param filename
@@ -535,6 +566,12 @@ export class GadgetsService {
     }
   }
 
+  /**
+   * @todo Write a job to delete images from Amazon s3 based on
+   * a set of criteria
+   * @param key
+   * @returns
+   */
   private async deleteFileFromS3(key: string) {
     const objectParams = {
       Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
