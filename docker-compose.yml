@@ -6,7 +6,7 @@ services:
   # Application service
   rentaa-app:
     depends_on:
-      - db
+      - mysql-db
     # this build context will take the commands from Dockerfile
     build:
       context: .
