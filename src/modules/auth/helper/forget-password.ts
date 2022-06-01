@@ -6,7 +6,7 @@ import { Token } from 'src/database/entities/auth/token';
 import { emailTemplate, TokenReason } from 'src/database/entities/enum';
 import { Auth } from './auth';
 import { Formatter } from '../../../utilities/formatter';
-import { ForgotPasswordDto } from 'src/modules/users/dto/change-password';
+import { ForgotPasswordDto } from 'src/modules/users/dto/update-password';
 import { EmailService } from 'src/utilities/email.service';
 
 @Injectable()
@@ -61,18 +61,27 @@ export class ForgotPassword {
       });
 
       await this.tokenRepo.save(tokenInfo);
-
-      await this.emailService.sendMail({
-        data: emailTemplate('forgotPassword', getUser.email),
+      
+      await this.emailService.mailUser({
+        to: getUser.email,
+        subject: `Rentaa: Password Reset`,
+        emailData: {
+          token: newToken.token,
+        },
+        emailTemplate: 'reset-password',
       });
 
       return {
+        statusCode: 200,
         message: `Successful. A link is sent to your mail to change your password`,
       };
     } catch (e) {
+      console.log("eeeee", e)
       throw new HttpException(
-        e.response ? e.response : `Error in processing user registration`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

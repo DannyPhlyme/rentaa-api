@@ -10,6 +10,9 @@ import { Password } from 'src/database/entities/auth/password';
 import { TokenReason, emailTemplate } from 'src/database/entities/enum';
 import { Profile } from 'src/database/entities/auth/profile';
 import { EmailService } from 'src/utilities/email.service';
+import { Avatar } from '../../../database/entities/auth/avatar';
+import * as path from 'path';
+// import { MailService } from '../../mail/mail.service';
 
 @Injectable()
 export class Registration {
@@ -26,14 +29,18 @@ export class Registration {
     @InjectRepository(Profile)
     private profileRepo: Repository<Profile>,
 
-    private emailService: EmailService,
+    @InjectRepository(Avatar)
+    private avatarRepo: Repository<Avatar>,
+
+    private mailer: EmailService,
 
     private authUtil: Auth,
   ) {}
 
   public async register(registerDto: RegisterDto) {
     try {
-      const { first_name, email, password, last_name, phone } = registerDto;
+      const { first_name, email, password, last_name, phone_number } =
+        registerDto;
 
       const getUser = await this.userRepo.findOne({
         where: {
@@ -45,20 +52,25 @@ export class Registration {
         throw new HttpException('Email already Exists', HttpStatus.BAD_REQUEST);
       }
 
+      let avatar: Avatar = this.avatarRepo.create({});
+
+      avatar = await this.avatarRepo.save(avatar);
+
+      const profile: Profile = this.profileRepo.create({
+        phone_number,
+        avatarId: avatar.id,
+      });
+
+      await this.profileRepo.save(profile);
+
       let newUser: User = this.userRepo.create({
         email,
         last_name,
         first_name,
-        phone,
+        profile,
       });
 
       newUser = await this.userRepo.save(newUser);
-
-      const profile: Profile = this.profileRepo.create({
-        user: newUser,
-      });
-
-      await this.profileRepo.save(profile);
 
       const userPassword: Password = this.passwordRepo.create({
         user: newUser,
@@ -82,17 +94,31 @@ export class Registration {
 
       await this.tokenRepo.save(userToken);
 
-      // await this.emailService.sendMail({
-      //   data: emailTemplate('verificationEmail', email, emailToken.token),
+      // await this.mailer.sendMail({
+      //   data: emailTemplate('rentaa-verify', getUser.first_name, emailToken.token),
       // });
+
+      await this.mailer.mailUser({
+        to: newUser.email,
+        subject: `Rentaa: Email Verification`,
+        emailData: {
+          first_name: newUser.first_name,
+          token: emailToken.token,
+        },
+        emailTemplate: 'verify-email',
+      });
 
       return {
         result: newUser,
       };
+      // return 'ok';
     } catch (e) {
+      console.log('>>>>>e from register', e);
       throw new HttpException(
-        e.response ? e.response : `Error in processing user registration`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

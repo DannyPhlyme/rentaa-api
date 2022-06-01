@@ -1,0 +1,55 @@
+# docker compose version
+version: '3.7'
+
+services:
+  # Application service
+  rentaa-app:
+    depends_on:
+      - mysql-db
+    # this build context will take the commands from Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rentaa-app
+    container_name: rentaa
+    # always restart the container if it stops.
+    restart: always
+    # docker run -t is allow
+    tty: true
+    ports:
+      - "${SERVICE_PORT}:${APP_PORT}"
+    working_dir: /home/rentaa-admin/rentaa-app
+    environment:
+      SERVICE_NAME: rentaa-app
+      SERVICE_TAGS: dev
+      SERVICE_DB_HOST: ${DB_HOST}:${DB_PORT}
+      SERVICE_DB_USER: ${DB_USERNAME}
+      SERVICE_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - rentaa_data:/app/data
+      # - ./:/var/app/rentaa
+      # - /var/app/rentaa/node_modules
+    # application network, each container for a service joins this network
+
+    networks:
+      - rentaa-network
+
+  mysql-db:
+    image: mysql:8
+    container_name: rentaa-db
+    ports:
+      - "3305:3306"
+    restart: always
+    env_file:
+      - docker.env  
+    volumes:
+      - rentaa_db_data:/var/lib/mysql
+    networks:
+      - rentaa-network
+
+networks:
+  rentaa-network:
+    driver: bridge
+volumes:
+  rentaa_db_data:
+  rentaa_data:

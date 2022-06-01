@@ -14,6 +14,15 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+# Environment Variables
+#.env
+.env.dev
+.env.prod
+.env.local
+
+# ORM config
+ormconfig.json
+
 # Tests
 /coverage
 /.nyc_output
@@ -26,8 +35,6 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
-
-.env
 
 # IDE - VSCode
 .vscode/*

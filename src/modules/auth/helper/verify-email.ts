@@ -64,12 +64,15 @@ export class VerifyEmail {
       // fire an event activity
 
       return {
+        status: 200,
         message: `Email Verification Successful`,
       };
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : `Error in processing user registration`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

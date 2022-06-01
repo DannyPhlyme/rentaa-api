@@ -3,7 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  UnprocessableEntityException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -65,9 +65,9 @@ export class Auth {
       }
       await this.generateReferralCode(first_name);
     } catch (e) {
-      throw new UnprocessableEntityException({
-        message: `Error in processing referral code`,
-        statusCode: 422,
+      throw new InternalServerErrorException({
+        message: `This is an unexpected error, please contact support`,
+        statusCode: 500,
       });
     }
   }
@@ -111,7 +111,12 @@ export class Auth {
         );
       }
 
-      const token = this.jwtService.sign({ user_id: user.id });
+      // console.log('>>>>>>user', user.profile.avatarId);
+
+      const token = this.jwtService.sign({
+        user_id: user.id,
+        avatar_id: user.profile.avatarId,
+      });
 
       const userHistory = this.loginHistoryRepo.create({
         login_date: new Date(),
@@ -125,27 +130,32 @@ export class Auth {
         token: this.generateString(150),
         reason: TokenReason.REFRESH_TOKEN,
         expiry_date: Formatter.calculate_days(7),
-        user: user,
       });
 
       const refreshToken = await this.tokenRepo.save(refreshed);
+      const {
+        first_name,
+        last_name,
+        profile: { phone_number },
+      } = user;
+
+      const userData = { first_name, last_name, phone_number };
 
       return {
         results: {
           token,
           refreshToken: refreshToken.token,
           expiry_date: refreshToken.expiry_date,
-        },
-        refreshToken: {
-          token_value: refreshToken.token,
           is_revoked: refreshToken.is_revoked,
         },
-        user,
+        userData,
       };
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : 'Authenticate User Error',
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : 'This is an unexpected error, please contact support',
+        e.status ? e.status : 500,
       );
     }
   }
@@ -166,8 +176,10 @@ export class Auth {
       await this.generateEmailToken();
     } catch (e) {
       throw new HttpException(
-        e.response ? e.response : `Something bad went wrong`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }

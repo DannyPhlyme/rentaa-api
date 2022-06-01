@@ -1,3 +1,14 @@
 insert into categories(id, name, description) values('0dcec0ba-cd6b-4f8b-941f-5ba0e9d386a3', 'Drones', 'drones');
-insert into categories(id, name, description) values('d1ff32e2-e7dc-4a0d-87c4-941dcf0d1847', 'Storage', 'storage');
+insert into categories(id, name, description) values('d1ff32e2-e7dc-4a0d-87c4-941dcf0d1847', 'Cameras', 'cameras');
 insert into categories(id, name, description) values('2f80edd0-02b0-41bd-bdf4-eb7cb4f9a25a', 'Electronics', 'electronics');
+insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4b2', 'SoundEquipment', 'sound Equipments');
+insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d5', 'Projectors', 'projectors');
+insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d2', 'Screen Monitors', 'screen Monitors');
+insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d8', 'Gaming', 'gaming');
+insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d8', 'Laptop/PCs', 'laptop/PCs');
+insert into categories(id, name, description) values('8d51f3be-1325-4d73-9585-c3985606c4d8', 'Others', 'others');
+
+
+
+DOWNLOAD NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash

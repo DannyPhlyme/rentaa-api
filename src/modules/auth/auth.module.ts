@@ -16,20 +16,19 @@ import { Token } from 'src/database/entities/auth/token';
 import { Password } from 'src/database/entities/auth/password';
 import { LoginHistory } from 'src/database/entities/auth/login-history';
 import { Profile } from 'src/database/entities/auth/profile';
-import { ProfileGallery } from 'src/database/entities/auth/profile-gallery';
+import { Avatar } from 'src/database/entities/auth/avatar';
 import { Auth } from './helper/auth';
 import { Formatter } from '../../utilities/formatter';
-import { UserModule } from '../users/user.module';
+import { UsersModule } from '../users/users.module';
 import { ConfigModule } from '@nestjs/config';
-import { UserInfo } from '../users/helper/user-info';
 import { CheckCredential } from './helper/check-credentials';
-import { GoogleStrategy } from './helper/google.strategy';
-import { GoogleLogin } from './helper/google-login';
 import { EmailService } from 'src/utilities/email.service';
+// import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
-    UserModule,
+    // MailModule,
+    UsersModule,
     PassportModule,
     ConfigModule.forRoot(),
     JwtModule.register({
@@ -42,17 +41,15 @@ import { EmailService } from 'src/utilities/email.service';
       Password,
       LoginHistory,
       Profile,
-      ProfileGallery,
+      Avatar,
     ]),
   ],
   providers: [
     AuthService,
     EmailService,
     JwtStrategy,
-    GoogleStrategy,
     Registration,
     Login,
-    GoogleLogin,
     ForgotPassword,
     ResendToken,
     VerifyEmail,
@@ -60,7 +57,6 @@ import { EmailService } from 'src/utilities/email.service';
     CheckCredential,
     Auth,
     Formatter,
-    UserInfo,
   ],
   controllers: [AuthController],
 })

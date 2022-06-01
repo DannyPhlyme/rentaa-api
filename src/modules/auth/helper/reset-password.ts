@@ -33,6 +33,8 @@ export class ResetPassword {
         relations: ['user'],
       });
 
+      console.log('>>>>>getREst', getResetInfo);
+
       if (!getResetInfo) {
         throw new HttpException(
           `Invalid Token Provided`,
@@ -58,6 +60,8 @@ export class ResetPassword {
         },
       });
 
+      console.log('>>>>>getUser', getUser);
+
       if (!getUser) {
         throw new HttpException(`User Not Found`, HttpStatus.NOT_FOUND);
       }
@@ -69,6 +73,8 @@ export class ResetPassword {
         },
       });
 
+      console.log('>>>>dbPassword', dbPassword);
+
       const passwordMatch = bcrypt.compareSync(
         payload.password,
         dbPassword.hash,
@@ -78,7 +84,7 @@ export class ResetPassword {
         await this.tokenRepo.delete({ token: token });
         throw new HttpException(
           `You're already using this password. Please use a different password`,
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.FORBIDDEN,
         );
       }
 
@@ -95,20 +101,17 @@ export class ResetPassword {
       await this.passwordRepo.save(dbPassword);
       await this.passwordRepo.save(passwordInfo);
 
-      // fire an event, sending the ip address
-
-      //Send reset password email
-      await this.emailService.sendMail({
-        data: emailTemplate('reset_password', getUser.email),
-      });
-
       return {
         message: `Password has been reset.`,
       };
     } catch (e) {
+      console.log(e);
+
       throw new HttpException(
-        e.response ? e.response : `something went wrong`,
-        e.status ? e.status : 422,
+        e.response
+          ? e.response
+          : `This is an unexpected error, please contact support`,
+        e.status ? e.status : 500,
       );
     }
   }
