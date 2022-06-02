@@ -99,13 +99,8 @@ export class Registration {
       // });
 
       await this.mailer.mailUser({
-<<<<<<< HEAD
-        to: 'dannyopeyemi@gmail.com',
-        subject: `Rentaa: Verify your email`,
-=======
         to: newUser.email,
         subject: `Rentaa: Email Verification`,
->>>>>>> 8649d2e1be96c2773123e13bbf3e6c33be730ff0
         emailData: {
           first_name: newUser.first_name,
           token: emailToken.token,

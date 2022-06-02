@@ -46,17 +46,6 @@ export class GadgetsService {
     user: User,
   ) {
     try {
-      // const {
-      //   name,
-      //   description,
-      //   condition,
-      //   price,
-      //   state,
-      //   lga,
-      //   contact_info,
-      //   categoryId,
-      // } = createGadgetDto;
-
       const category: Category = await this.categoryRepository.findOne({
         where: {
           id: createGadgetDto.categoryId,

@@ -59,9 +59,9 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
       // database: process.env.DB,
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: process.env.MYSQL_DATABASE,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB,
       ssl: {
         rejectUnauthorized: false,
       },

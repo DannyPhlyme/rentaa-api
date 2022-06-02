@@ -15,7 +15,7 @@ lerna-debug.log*
 .DS_Store
 
 # Environment Variables
-#.env
+.env
 .env.dev
 .env.prod
 .env.local

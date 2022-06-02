@@ -29,6 +29,7 @@ services:
       - rentaa_data:/app/data
       # - ./:/var/app/rentaa
       # - /var/app/rentaa/node_modules
+      - /home/rentaa-admin/rentaa-app/node_modules
     # application network, each container for a service joins this network
 
     networks:
