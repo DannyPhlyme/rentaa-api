@@ -1,15 +1,19 @@
-FROM node:16-alpine3.14
+FROM node:14.5.0-alpine
+
+# RUN npm config rm proxy
+
+# RUN npm config rm https-proxy --tried removing npm proxy
 
 # Install PM2
 RUN npm install -g pm2
 
-# # Create our working directory
+# Create our working directory
 # RUN mkdir -p /var/app/rentaa
 
-# # Set working directory
+# Set working directory
 # WORKDIR /var/app/rentaa
 
-# # Add `/usr/src/app/node_modules/.bin` to $PATH
+# Add `/usr/src/app/node_modules/.bin` to $PATH
 # ENV PATH /var/app/rentaa/node_modules/.bin:$PATH
 
 # Create a user(rentaa-admin) with no password
@@ -22,8 +26,7 @@ RUN mkdir -p /home/rentaa-admin/rentaa-app
 WORKDIR /home/rentaa-admin/rentaa-app
 
 # RUN rm -rf node_modules package-lock.json
-RUN rm -rf node_modules
-
+RUN rm -rf node_modules package-lock.json
 # Add `/usr/src/app/node_modules/.bin` to $PATH
 ENV PATH /home/rentaa-admin/rentaa-app/node_modules/.bin:$PATH
 
