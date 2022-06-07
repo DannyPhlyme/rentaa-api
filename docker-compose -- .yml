@@ -1,67 +1,57 @@
-version: "3"
+# docker compose version
+version: '3.7'
+
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:latest
+  # Application service
+  rentaa-app:
+    depends_on:
+      - mysql-db
+    # this build context will take the commands from Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: host
+    image: rentaa-app
+    container_name: rentaa
+    # always restart the container if it stops.
+    restart: always
+    # docker run -t is allow
+    tty: true
     ports:
-      - "5432:5432"
-    volumes:
-      #- /data/postgres:/data/postgres
-      - /var/lib/postgres/data:/usr/local/share/postgres/data
-      #  - local_pgdata:/var/lib/postgresql/data
-    env_file:
-      - docker.env
-    networks:
-      - postgres
- 
-  pgadmin:
-    links:
-      - postgres:postgres
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    ports:
-      - "8080:80"
-    volumes:
-      - /var/lib/pgadmin/data:/usr/local/share/.pgadmin
-      # - pgadmin-data:/var/lib/pgadmin
-    env_file:
-      - docker.env
-    networks:
-      - postgres
- 
-  es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
-    container_name: es01
+      - "${SERVICE_PORT}:${APP_PORT}"
+    working_dir: /home/rentaa-admin/rentaa-app
     environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      SERVICE_NAME: rentaa-app
+      SERVICE_TAGS: dev
+      SERVICE_DB_HOST: ${DB_HOST}:${DB_PORT}
+      SERVICE_DB_USER: ${DB_USERNAME}
+      SERVICE_DB_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - data01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-    env_file:
-      - docker.env 
+      # - rentaa_data:/app/data # named volume 
+      - ./:/home/rentaa-admin/rentaa-app # mount local root folder onto container directory /home/rentaa-admin/rentaa-app
+      # - /var/app/rentaa/node_modules
+      # - rentaa_data:/home/rentaa-admin/rentaa-app/node_modules # named volume
+      - /home/rentaa-admin/rentaa-app/node_modules # anonymous volume
+    # application network, each container for a service joins this network
     networks:
-      - elastic
-       
-volumes:
-  data01:
-    driver: local
-  data02:
-    driver: local
-  data03:
-    driver: local
+      - rentaa-network
+
+  mysql-db:
+    image: mysql:8
+    container_name: rentaa-db
+    ports:
+      - "3305:3306"
+    restart: always
+    env_file:
+      - docker.env  
+    volumes:
+      - rentaa_db_data:/var/lib/mysql
+    networks:
+      - rentaa-network
 
 networks:
-  postgres:
+  rentaa-network:
     driver: bridge
-  elastic:
-    driver: bridge
+volumes:
+  rentaa_db_data:
+  # rentaa_data:

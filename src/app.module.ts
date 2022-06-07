@@ -50,7 +50,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
     // SearchModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
       // type: 'postgres',
       // host: process.env.DB_HOST,
       // port: Number(process.env.DB_PORT),
@@ -62,9 +62,9 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+      // ssl: {
+      //   rejectUnauthorized: false,
+      // },
       // options: {trustServerCertificate: true},
       entities: ['dist/database/entities/*/*{.ts,.js}'],
       migrations: ['migrations/*{.ts,.js}'],

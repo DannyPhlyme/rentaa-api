@@ -1,58 +1,28 @@
-FROM node:14.5.0-alpine
+FROM node:14.5.0-alpine as development
 
-# RUN npm config rm proxy
+WORKDIR /usr/src/app
 
-# RUN npm config rm https-proxy --tried removing npm proxy
+COPY package*.json ./
 
-# Install PM2
-RUN npm install -g pm2
+RUN npm install --only=development
 
-# Create our working directory
-# RUN mkdir -p /var/app/rentaa
+COPY . .
 
-# Set working directory
-# WORKDIR /var/app/rentaa
+RUN npm run build
 
-# Add `/usr/src/app/node_modules/.bin` to $PATH
-# ENV PATH /var/app/rentaa/node_modules/.bin:$PATH
+FROM node:14.5.0-alpine as production
 
-# Create a user(rentaa-admin) with no password
-RUN adduser --disabled-password rentaa-admin
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
-# Create our working directory
-RUN mkdir -p /home/rentaa-admin/rentaa-app
+WORKDIR /usr/src/app
 
-# Set working directory
-WORKDIR /home/rentaa-admin/rentaa-app
+COPY package*.json ./
 
-# RUN rm -rf node_modules package-lock.json
-RUN rm -rf node_modules package-lock.json
-# Add `/usr/src/app/node_modules/.bin` to $PATH
-ENV PATH /home/rentaa-admin/rentaa-app/node_modules/.bin:$PATH
+RUN npm install --only=production
 
-# Copy existing application directory contents
-COPY . /home/rentaa-admin/rentaa-app
+COPY . .
 
-# Install and cache app dependencies
-COPY package.json /home/rentaa-admin/rentaa-app/package.json
-COPY package-lock.json /home/rentaa-admin/rentaa-app/package-lock.json
+COPY --from=development /usr/src/app/dist ./dist
 
-# Grant permission to the application
-RUN chown -R rentaa-admin:rentaa-admin /home/rentaa-admin/rentaa-app
-USER rentaa-admin
-
-# Clear application caching
-RUN npm cache clean --force
-
-# Install all dependencies
-RUN npm install
-
-# Expose port 3002
-EXPOSE 3002
-
-# start run in production environment
-#CMD [ "npm", "run", "pm2:delete" ]
-#CMD [ "npm", "run", "build-docker:dev" ]
-
-# Start run in development environment
-CMD [ "npm", "run", "start:dev" ]
+CMD ["node", "dist/main"]

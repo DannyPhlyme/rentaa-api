@@ -17,8 +17,8 @@ export class Avatar extends BaseEntity {
    * @todo change type to bytea for postgres
    */
   @Column({
-    type: 'longblob',
-    // type: 'bytea',
+    // type: 'longblob',
+    type: 'bytea',
     nullable: true,
   })
   data: Uint8Array;
