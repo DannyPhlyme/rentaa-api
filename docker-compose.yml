@@ -5,6 +5,7 @@ services:
     container_name: rentaa
     build:
       context: .
+      # network: host # remove and test for other platform
       target: development
     volumes:
       - .:/usr/src/app
