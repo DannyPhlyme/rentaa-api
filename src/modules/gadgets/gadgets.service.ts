@@ -1,18 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateGadgetDto } from './dto/create-gadget.dto';
-import { UpdateGadgetDto } from './dto/update-gadget.dto';
-import { Gadget } from '../../database/entities/gadgets/gadget';
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import { SearchServiceInterface } from 'src/interfaces/search/search.interface';
+import { s3Client } from 'src/providers/aws/clients/S3';
+import { Not, Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
+import { User } from '../../database/entities/auth/user';
 import { Category } from '../../database/entities/gadgets/category';
+import { Gadget } from '../../database/entities/gadgets/gadget';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
-import { User } from '../../database/entities/auth/user';
-import { v4 as uuid } from 'uuid';
-import { s3Client } from 'src/providers/aws/clients/S3';
-import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
-import SearchService from '../search/search.service';
+import { CreateGadgetDto } from './dto/create-gadget.dto';
+import { UpdateGadgetDto } from './dto/update-gadget.dto';
+import { GadgetSearchObject } from './model/gadget.search.object';
 
 @Injectable()
 export class GadgetsService {
@@ -29,7 +30,8 @@ export class GadgetsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    private searchService: SearchService,
+    @Inject('SearchServiceInterface')
+    private readonly searchService: SearchServiceInterface<any>,
   ) {}
 
   /**
@@ -298,6 +300,7 @@ export class GadgetsService {
           user,
         },
       });
+
       return {
         item: gadget,
       };
@@ -480,27 +483,10 @@ export class GadgetsService {
     }
   }
 
-  /**
-   * Method searches for a gadget based on a given text
-   *
-   * @param text
-   * @returns
-   */
-  // public async searchGadgets(text: string) {
-  //   const results = await this.searchService.search(text);
-
-  //   const ids = results.map((result) =>
-  //     result.hits.hits.map(
-  //       (result: { _source: { id: any } }) => result._source.id,
-  //     ),
-  //   );
-
-  //   if (!ids.length) return [];
-
-  //   return this.gadgetRepository.find({
-  //     where: { id: In(ids) },
-  //   });
-  // }
+  public async search(q: any): Promise<any> {
+    const data = GadgetSearchObject.searchObject(q);
+    return await this.searchService.searchIndex(data);
+  }
 
   /**
    * Utility method to upload photo to Amazon S3

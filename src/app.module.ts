@@ -16,7 +16,8 @@ import { Gadget } from './database/entities/gadgets/gadget';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 // import { MailModule } from './modules/mail/mail.module';
-// import { SearchModule } from './modules/search/search.module';
+import { SearchModule } from './modules/search/search.module';
+import { ObserverModule } from './observers/observer.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
     GadgetsModule,
     ReviewsModule,
     CategoriesModule,
-    // SearchModule,
+    SearchModule,
+    ObserverModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -63,8 +65,10 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
       // options: {trustServerCertificate: true},
       entities: ['dist/database/entities/*/*{.ts,.js}'],
       migrations: ['migrations/*{.ts,.js}'],
+      subscribers: ['dist/observers/subscribers/*.subscriber{.ts,.js}'],
       synchronize: true,
-      logging: ['error'],
+      logger: 'advanced-console',
+      logging: 'all',
     }),
     TypeOrmModule.forFeature([Category, Gadget]),
   ],
@@ -77,6 +81,5 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
     AppService,
     CategoriesService,
   ],
-  // exports: [CategoriesService],
 })
 export class AppModule {}
