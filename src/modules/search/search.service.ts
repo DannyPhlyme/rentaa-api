@@ -5,6 +5,7 @@ import { ConfigSearch } from '../../config/search/config.serach';
 
 /**
  * @todo Log event diagnostics
+ * @todo thinking of renaming the index to document 
  */
 @Injectable()
 export class SearchService
@@ -12,7 +13,8 @@ export class SearchService
   implements SearchServiceInterface<any>
 {
   constructor() {
-    super(ConfigSearch.searchConfig(process.env.ELASTIC_SEARCH_URL));
+    super(ConfigSearch.searchConfig(process.env.ELASTIC_SEARCH_URL, 
+      process.env.ELASTICSEARCH_USERNAME, process.env.ELASTICSEARCH_PASSWORD));
   }
 
   public async insertIndex(bulkData: any): Promise<any> {
@@ -36,7 +38,7 @@ export class SearchService
   public async searchIndex(searchData: any): Promise<any> {
     try {
       const response = await this.search(searchData);
-      return response.hits.hits;
+      return response.body.hits.hits;
     } catch(error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }

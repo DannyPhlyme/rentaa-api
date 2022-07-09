@@ -3,19 +3,25 @@ version: '3.7'
 services:
   rentaa-app:
     container_name: rentaa
+    # dns:
+    #   - "10.1.2.3"
+    #   - "8.8.8.8"
+    # network_mode: "bridge"
     build:
       context: .
-      # network: host # remove and test for other platform
       target: development
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     ports:
       - ${APP_PORT}:${APP_PORT}
-      - 9229:9229
+      # - 9229:9229
     command: npm run start:dev
     env_file:
       - .env
+    environment:
+      SERVICE_ES_HOST: ${ELASTIC_SEARCH_HOST}:${ELASTIC_SEARCH_PORT}
+      ELASTICSEARCH_URL: ${ELASTIC_SEARCH_URL}
     networks:
       - webnet
     depends_on:
@@ -35,6 +41,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
   elasticsearch:
+    # image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
     image: docker.elastic.co/elasticsearch/elasticsearch:7.9.0
     container_name: elasticsearch
     environment:
@@ -56,7 +63,7 @@ services:
     ports:
       - "${ELASTIC_SEARCH_PORT}:${ELASTIC_SEARCH_PORT}"
     networks:
-      - nest-demo-network
+      - webnet
 networks:
   webnet:
 volumes:

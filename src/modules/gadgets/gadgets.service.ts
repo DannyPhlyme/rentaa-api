@@ -15,6 +15,9 @@ import { CreateGadgetDto } from './dto/create-gadget.dto';
 import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { GadgetSearchObject } from './model/gadget.search.object';
 
+/**
+ * @todo ADD PM2
+ */
 @Injectable()
 export class GadgetsService {
   constructor(
@@ -75,8 +78,6 @@ export class GadgetsService {
         photoDto.bucketname = (await result).Bucket;
 
         gadget = await this.gadgetRepository.save(gadget);
-
-        // this.searchService.indexGadget(gadget); // index gadget in elastic search
 
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
@@ -234,7 +235,6 @@ export class GadgetsService {
 
           photos.push(photo); // push photos to be updated
         }
-        // console.log(photos);
 
         for (let photo = 0; photo < photos.length; photo++) {
           await this.uploadFileToS3(
@@ -259,10 +259,6 @@ export class GadgetsService {
         const totalPhotos: number = await this.photoRepository.count({
           where: { gadget },
         });
-
-        // console.log(
-        //   `totalPhotos: ${totalPhotos}, deletePhotoIds: ${deletePhotoIds.length}`,
-        // );
 
         if (totalPhotos - deletePhotoIds.length < MIN_PHOTO)
           throw new HttpException(
@@ -291,7 +287,15 @@ export class GadgetsService {
       delete updateGadgetDto.categoryId; // delete property categoryId to conform to QueryDeepPartialEntity
       delete updateGadgetDto.photos;
 
-      await this.gadgetRepository.update({ id, user }, updateGadgetDto);
+      // Added a one time property 'id' in order to preload gadget from database
+      Object.defineProperty(updateGadgetDto, 'id', {
+        value: id,
+        writable: false,
+      });
+
+      gadget = await this.gadgetRepository.preload(updateGadgetDto);
+
+      await this.gadgetRepository.save(gadget);
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos', 'category', 'user'],
@@ -336,10 +340,8 @@ export class GadgetsService {
 
       const photos: GadgetPhoto[] = gadget.photos;
 
-      for await (const photo of photos) {
-        await this.photoRepository.softDelete(photo.id); // delete gadget photos
-      }
-      await this.gadgetRepository.softDelete({ id, user }); // delete gadget
+      await this.photoRepository.softRemove(photos);
+      await this.gadgetRepository.softRemove(gadget, { data: { action: 'soft-remove' } });
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -388,10 +390,8 @@ export class GadgetsService {
 
       const photos: GadgetPhoto[] = gadget.photos;
 
-      for await (const photo of photos) {
-        await this.photoRepository.restore(photo.id); // restore gadget photos
-      }
-      await this.gadgetRepository.restore({ id, user }); // restore gadget
+      await this.photoRepository.recover(photos);
+      await this.gadgetRepository.recover(gadget, { data: { action: 'recover' } });
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -514,7 +514,6 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
-      // console.log('>>>error', error);
       throw new Error('An error occured');
     }
   }

@@ -25,10 +25,7 @@ export class GadgetElasticIndex {
     return await this.searchService.insertIndex(data);
   }
 
-  /**
-   * Utility methods
-   */
-  private async deleteGadgetDocument(gadgetId: string): Promise<any> {
+  public async deleteGadgetDocument(gadgetId: string): Promise<any> {
     const data = {
       index: gadgetIndex._index,
       type: gadgetIndex._type,
@@ -38,6 +35,10 @@ export class GadgetElasticIndex {
     return await this.searchService.deleteDocument(data);
   }
 
+  /**
+   * Utility methods
+   */
+  
   private bulkIndex(gadgetId: string): any {
     return {
       _index: gadgetIndex._index,
@@ -46,13 +47,21 @@ export class GadgetElasticIndex {
     };
   }
 
-  private gadgetDocument(gadget: Gadget): any {
+  private gadgetDocument({
+    id,
+    name,
+    description,
+  }: {
+    id: string;
+    name: string;
+    description: string;
+  }): any {
     const bulk = [];
     bulk.push({
-      index: this.bulkIndex(gadget.id),
+      index: this.bulkIndex(id),
     });
 
-    bulk.push(gadget);
+    bulk.push({ id, name, description });
 
     return {
       body: bulk,

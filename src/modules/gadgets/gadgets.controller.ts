@@ -42,6 +42,11 @@ import { DEFAULT_UUID } from '../../config/config';
 export class GadgetsController {
   constructor(private readonly gadgetsService: GadgetsService) {}
 
+	  @Get('/search')
+  async searchGadgets(@Query() query: any): Promise<any> {
+    return await this.gadgetsService.search(query.q);
+  }
+
   /**
    *
    * @param userId
@@ -250,10 +255,6 @@ export class GadgetsController {
     return await this.gadgetsService.restore(id, <User>request.user);
   }
 
-  @Get('search')
-  async searchGadgets(@Query() query: any): Promise<any> {
-    return await this.gadgetsService.search(query.q);
-  }
 
   /**
    * Utility method
