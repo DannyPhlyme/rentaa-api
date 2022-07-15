@@ -9,7 +9,7 @@ services:
     # network_mode: "bridge"
     build:
       context: .
-      target: development
+      target: production
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
