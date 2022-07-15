@@ -1,39 +1,64 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
-import { Gadget } from 'src/database/entities/gadgets/gadget';
-import { GadgetSearchBody } from 'src/interfaces/search/gadget.search.body.interface';
-import { GadgetSearchResult } from 'src/interfaces/search/gadget.search.result.interface';
+import { SearchServiceInterface } from '../../interfaces/search/search.interface';
+import { ConfigSearch } from '../../config/search/config.serach';
 
 /**
  * @todo Log event diagnostics
+ * @todo thinking of renaming the index to document 
  */
 @Injectable()
-export default class SearchService {
-  // index = 'gadgets';
-  // constructor(private readonly elasticSearchService: ElasticsearchService) {}
-  // async indexGadget(gadget: Gadget) {
-  //   return this.elasticSearchService.index<GadgetSearchBody>({
-  //     index: this.index,
-  //     document: {
-  //       id: gadget.id,
-  //       name: gadget.name,
-  //       description: gadget.description,
-  //     },
-  //   });
-  // }
-  // async search(text: string) {
-  //   const body = await this.elasticSearchService.search<GadgetSearchResult>({
-  //     index: this.index,
-  //     body: {
-  //       query: {
-  //         // search both through the name and the description of the gadgets
-  //         multi_match: {
-  //           query: text,
-  //           fields: ['name', 'description'],
-  //         },
-  //       },
-  //     },
-  //   });
-  //   return body.hits.hits.map((item) => item._source);
-  // }
+export class SearchService
+  extends ElasticsearchService
+  implements SearchServiceInterface<any>
+{
+  constructor() {
+    super(ConfigSearch.searchConfig(process.env.ELASTIC_SEARCH_URL, 
+      process.env.ELASTIC_USERNAME, process.env.ELASTIC_PASSWORD));
+  }
+
+  public async insertIndex(bulkData: any): Promise<any> {
+    try {
+      const response = await this.bulk(bulkData);
+      return response;
+    } catch(error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async updateIndex(updateData: any): Promise<any> {
+    try {
+      const response = await this.update(updateData);
+      return response;
+    } catch(error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
+  public async searchIndex(searchData: any): Promise<any> {
+    try {
+      const response = await this.search(searchData);
+      return response.body.hits.hits;
+    } catch(error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
+  public async deleteIndex(indexData: any): Promise<any> {
+    try {
+      const response = await this.indices.delete(indexData);
+      return response;
+    } catch(error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async deleteDocument(indexData: any): Promise<any> {
+    try {
+      const response = await this.delete(indexData);
+      return response;
+    } catch(error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

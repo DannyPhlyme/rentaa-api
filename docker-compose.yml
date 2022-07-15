@@ -1,55 +1,96 @@
-# docker compose version
 version: '3.7'
 
 services:
-  # Application service
   rentaa-app:
-    depends_on:
-      - mysql-db
-    # this build context will take the commands from Dockerfile
+    container_name: rentaa
+    # dns:
+    #   - "10.1.2.3"
+    #   - "8.8.8.8"
+    # network_mode: "bridge"
     build:
       context: .
-      dockerfile: Dockerfile
-    image: rentaa-app
-    container_name: rentaa
-    # always restart the container if it stops.
-    restart: always
-    # docker run -t is allow
-    tty: true
-    ports:
-      - "${SERVICE_PORT}:${APP_PORT}"
-    working_dir: /home/rentaa-admin/rentaa-app
-    environment:
-      SERVICE_NAME: rentaa-app
-      SERVICE_TAGS: dev
-      SERVICE_DB_HOST: ${DB_HOST}:${DB_PORT}
-      SERVICE_DB_USER: ${DB_USERNAME}
-      SERVICE_DB_PASSWORD: ${DB_PASSWORD}
+      target: development
     volumes:
-      - rentaa_data:/app/data
-      # - ./:/var/app/rentaa
-      # - /var/app/rentaa/node_modules
-    # application network, each container for a service joins this network
-
-    networks:
-      - rentaa-network
-
-  mysql-db:
-    image: mysql:8
-    container_name: rentaa-db
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
     ports:
-      - "3305:3306"
-    restart: always
+      - ${APP_PORT}:${APP_PORT}
+      # - 9229:9229
+    command: npm run start:dev
     env_file:
-      - docker.env  
-    volumes:
-      - rentaa_db_data:/var/lib/mysql
+      - .env
+    environment:
+      SERVICE_ES_HOST: ${ELASTIC_SEARCH_HOST}:${ELASTIC_SEARCH_PORT}
+      ELASTICSEARCH_URL: ${ELASTIC_SEARCH_URL}
     networks:
-      - rentaa-network
+      - webnet
+    depends_on:
+      - postgres
+  
+  postgres:
+    container_name: rentaa-db
+    image: postgres:12
+    networks:
+      - webnet
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB}
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  
+  elasticsearch:
+    # image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.0
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - http.port=9200
+      - http.host=0.0.0.0
+      - transport.host=127.0.0.1
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD} 
+      - xpack.license.self_generated.type=trial 
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate=$CERTS_DIR/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.http.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate 
+      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$CERTS_DIR/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/var/lib/elasticsearch
+      - certs:$CERTS_DIR
+    ports:
+      - "${ELASTIC_SEARCH_PORT}:${ELASTIC_SEARCH_PORT}"
+    networks:
+      - webnet
+    
+    healthcheck:
+      test: curl --cacert $CERTS_DIR/ca/ca.crt -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s   
+      retries: 5
 
 networks:
-  rentaa-network:
-    driver: bridge
+  webnet:
+
 volumes:
-  rentaa_db_data:
-  rentaa_data:
+  pgdata:
+  esdata:
+  certs:

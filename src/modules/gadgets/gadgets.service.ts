@@ -1,19 +1,23 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateGadgetDto } from './dto/create-gadget.dto';
-import { UpdateGadgetDto } from './dto/update-gadget.dto';
-import { Gadget } from '../../database/entities/gadgets/gadget';
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
+import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import { SearchServiceInterface } from 'src/interfaces/search/search.interface';
+import { s3Client } from 'src/providers/aws/clients/S3';
+import { Not, Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
+import { User } from '../../database/entities/auth/user';
 import { Category } from '../../database/entities/gadgets/category';
+import { Gadget } from '../../database/entities/gadgets/gadget';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { CreatePhotoDto } from '../photos/dto/create-photo.dto';
-import { User } from '../../database/entities/auth/user';
-import { v4 as uuid } from 'uuid';
-import { s3Client } from 'src/providers/aws/clients/S3';
-import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
-import SearchService from '../search/search.service';
+import { CreateGadgetDto } from './dto/create-gadget.dto';
+import { UpdateGadgetDto } from './dto/update-gadget.dto';
+import { GadgetSearchObject } from './model/gadget.search.object';
 
+/**
+ * @todo ADD PM2
+ */
 @Injectable()
 export class GadgetsService {
   constructor(
@@ -29,7 +33,8 @@ export class GadgetsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    private searchService: SearchService,
+    @Inject('SearchServiceInterface')
+    private readonly searchService: SearchServiceInterface<any>,
   ) {}
 
   /**
@@ -46,17 +51,6 @@ export class GadgetsService {
     user: User,
   ) {
     try {
-      // const {
-      //   name,
-      //   description,
-      //   condition,
-      //   price,
-      //   state,
-      //   lga,
-      //   contact_info,
-      //   categoryId,
-      // } = createGadgetDto;
-
       const category: Category = await this.categoryRepository.findOne({
         where: {
           id: createGadgetDto.categoryId,
@@ -84,8 +78,6 @@ export class GadgetsService {
         photoDto.bucketname = (await result).Bucket;
 
         gadget = await this.gadgetRepository.save(gadget);
-
-        // this.searchService.indexGadget(gadget); // index gadget in elastic search
 
         const photo: GadgetPhoto = this.photoRepository.create(photoDto);
         photo.gadget = gadget;
@@ -243,7 +235,6 @@ export class GadgetsService {
 
           photos.push(photo); // push photos to be updated
         }
-        // console.log(photos);
 
         for (let photo = 0; photo < photos.length; photo++) {
           await this.uploadFileToS3(
@@ -268,10 +259,6 @@ export class GadgetsService {
         const totalPhotos: number = await this.photoRepository.count({
           where: { gadget },
         });
-
-        // console.log(
-        //   `totalPhotos: ${totalPhotos}, deletePhotoIds: ${deletePhotoIds.length}`,
-        // );
 
         if (totalPhotos - deletePhotoIds.length < MIN_PHOTO)
           throw new HttpException(
@@ -300,7 +287,15 @@ export class GadgetsService {
       delete updateGadgetDto.categoryId; // delete property categoryId to conform to QueryDeepPartialEntity
       delete updateGadgetDto.photos;
 
-      await this.gadgetRepository.update({ id, user }, updateGadgetDto);
+      // Added a one time property 'id' in order to preload gadget from database
+      Object.defineProperty(updateGadgetDto, 'id', {
+        value: id,
+        writable: false,
+      });
+
+      gadget = await this.gadgetRepository.preload(updateGadgetDto);
+
+      await this.gadgetRepository.save(gadget);
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos', 'category', 'user'],
@@ -309,6 +304,7 @@ export class GadgetsService {
           user,
         },
       });
+
       return {
         item: gadget,
       };
@@ -344,10 +340,8 @@ export class GadgetsService {
 
       const photos: GadgetPhoto[] = gadget.photos;
 
-      for await (const photo of photos) {
-        await this.photoRepository.softDelete(photo.id); // delete gadget photos
-      }
-      await this.gadgetRepository.softDelete({ id, user }); // delete gadget
+      await this.photoRepository.softRemove(photos);
+      await this.gadgetRepository.softRemove(gadget, { data: { action: 'soft-remove' } });
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -396,10 +390,8 @@ export class GadgetsService {
 
       const photos: GadgetPhoto[] = gadget.photos;
 
-      for await (const photo of photos) {
-        await this.photoRepository.restore(photo.id); // restore gadget photos
-      }
-      await this.gadgetRepository.restore({ id, user }); // restore gadget
+      await this.photoRepository.recover(photos);
+      await this.gadgetRepository.recover(gadget, { data: { action: 'recover' } });
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -491,27 +483,10 @@ export class GadgetsService {
     }
   }
 
-  /**
-   * Method searches for a gadget based on a given text
-   *
-   * @param text
-   * @returns
-   */
-  // public async searchGadgets(text: string) {
-  //   const results = await this.searchService.search(text);
-
-  //   const ids = results.map((result) =>
-  //     result.hits.hits.map(
-  //       (result: { _source: { id: any } }) => result._source.id,
-  //     ),
-  //   );
-
-  //   if (!ids.length) return [];
-
-  //   return this.gadgetRepository.find({
-  //     where: { id: In(ids) },
-  //   });
-  // }
+  public async search(q: any): Promise<any> {
+    const data = GadgetSearchObject.searchObject(q);
+    return await this.searchService.searchIndex(data);
+  }
 
   /**
    * Utility method to upload photo to Amazon S3
@@ -539,7 +514,6 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
-      // console.log('>>>error', error);
       throw new Error('An error occured');
     }
   }
