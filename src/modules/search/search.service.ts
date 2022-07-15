@@ -14,7 +14,7 @@ export class SearchService
 {
   constructor() {
     super(ConfigSearch.searchConfig(process.env.ELASTIC_SEARCH_URL, 
-      process.env.ELASTICSEARCH_USERNAME, process.env.ELASTICSEARCH_PASSWORD));
+      process.env.ELASTIC_USERNAME, process.env.ELASTIC_PASSWORD));
   }
 
   public async insertIndex(bulkData: any): Promise<any> {

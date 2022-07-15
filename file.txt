@@ -37,8 +37,12 @@ sudo nano /var/lib/pgsql/12/data/postgresql.conf
 psql -c "alter user postgres with password 'StrongPassword'"
 sudo ss -tunelp | grep 5432
 
-docker exec -u 0 -it elasticsearch ----- (-u 0 login as root)
+docker exec -u 0 -it elasticsearch /bin/sh ----- (-u 0 login as root)
+yum install nano -y
 sysctl -w vm.max_map_count=262144
+curl --cacert ca.crt --user elastic:P@ssw0rd$1 https://localhost:9200
+docker cp elasticsearch:/usr/share/elasticsearch/config/certificates/ca/ca.crt .
+docker-compose -f create-certs.yml run --rm create_certs
 
 9CEEzF+GpNmB69+rSmb8
 f821243ebce7782f478f5f7376497b2cb854cc8807e1367c5c3e71f9f9c85e7d
