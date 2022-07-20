@@ -6,7 +6,7 @@ import { Token } from 'src/database/entities/auth/token';
 import { emailTemplate, Status, TokenReason } from 'src/database/entities/enum';
 import { User } from 'src/database/entities/auth/user';
 import { Password } from 'src/database/entities/auth/password';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { EmailService } from 'src/utilities/email.service';
 
 export class ResetPassword {

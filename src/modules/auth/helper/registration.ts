@@ -98,6 +98,8 @@ export class Registration {
       //   data: emailTemplate('rentaa-verify', getUser.first_name, emailToken.token),
       // });
 
+      console.log('>>>>>got here');
+
       await this.mailer.mailUser({
         to: newUser.email,
         subject: `Rentaa: Email Verification`,

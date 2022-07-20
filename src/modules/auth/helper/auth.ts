@@ -14,7 +14,7 @@ import { Token } from 'src/database/entities/auth/token';
 import { Password } from 'src/database/entities/auth/password';
 import { Status, TokenReason } from 'src/database/entities/enum';
 import { Formatter } from '../../../utilities/formatter';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class Auth {

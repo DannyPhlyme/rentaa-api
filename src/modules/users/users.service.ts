@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import { ChangeEmailDto } from './dto/update-email';
 import { ChangePasswordDto } from './dto/update-password';
 import { UpdateUserDto } from './dto/update-user';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
 import { Avatar } from '../../database/entities/auth/avatar';
 

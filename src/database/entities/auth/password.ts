@@ -1,7 +1,8 @@
 import { Column, Entity, ManyToOne, BeforeUpdate, BeforeInsert } from 'typeorm';
 import { Status } from '../enum';
 import { User } from './user';
-import * as bcrypt from 'bcrypt';
+// import * as bcrypt from 'bcrypt';
+import * as bcrypt from "bcryptjs"
 import { BaseEntity } from '../base';
 
 @Entity({
@@ -36,7 +37,7 @@ export class Password extends BaseEntity {
   }
 
   async comparePassword(data: string) {
-    return await bcrypt.compare(data, this.hash);
+    return bcrypt.compareSync(data, this.hash);
   }
 
   @BeforeUpdate()

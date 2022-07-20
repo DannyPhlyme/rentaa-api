@@ -23,7 +23,7 @@ sudo chmod -v +x /usr/local/bin/docker-compose
 
 nvm install --lts
 
-    mysql --help | grep Default -A 1
+mysql --help | grep Default -A 1
 mysqld --help --verbose
 mysql --help
 
