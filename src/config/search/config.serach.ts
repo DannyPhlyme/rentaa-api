@@ -13,7 +13,7 @@ export class ConfigSearch {
         password,
       },
       ssl: {
-        // ca: readFileSync('./ca.crt'),
+        ca: readFileSync('./ca.crt'),
         rejectUnauthorized: false,
       },
       maxRetries: 5,
