@@ -9,10 +9,10 @@ services:
     # network_mode: "bridge"
     build:
       context: .
-      target: production
+      target: development
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
+      # - /usr/src/app/node_modules
     ports:
       - ${APP_PORT}:${APP_PORT}
       # - 9229:9229
