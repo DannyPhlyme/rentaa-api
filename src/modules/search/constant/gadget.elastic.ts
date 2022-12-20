@@ -38,7 +38,7 @@ export class GadgetElasticIndex {
   /**
    * Utility methods
    */
-  
+
   private bulkIndex(gadgetId: string): any {
     return {
       _index: gadgetIndex._index,

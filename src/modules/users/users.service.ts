@@ -76,8 +76,6 @@ export class UsersService {
         user,
       };
     } catch (error) {
-      console.log(error);
-      
       throw new HttpException(
         error.response
           ? error.response
@@ -272,7 +270,7 @@ export class UsersService {
 
       return {
         message: `Password successfully changed`,
-      };  
+      };
     } catch (e) {
       throw new HttpException(
         e.response

@@ -88,7 +88,6 @@ export class ReviewsService {
         message: 'Thank you for leaving a review',
       };
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         error.response
           ? error.response

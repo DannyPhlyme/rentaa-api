@@ -6,10 +6,12 @@ import * as path from 'path';
 @Injectable()
 export class AppService {
   constructor(
-    private categoriesService: CategoriesService,
-    private mailerService: MailerService,
+    private categoriesService: CategoriesService, // private mailerService: MailerService,
   ) {}
 
+  /**
+   * Method returns Hello World!
+   */
   getHello(): string {
     return 'Hello World!';
   }
@@ -33,26 +35,26 @@ export class AppService {
     }
   }
 
-  public example(): void {
-    const temp = 'index';
-    this.mailerService
-      .sendMail({
-        to: 'dannyopeyemi24@gmail.com', // List of receivers email address
-        // from: 'dannyopeyemi@gmail.com', // Senders email address
-        subject: 'Testing Nest Mailermodule with template ✔',
-        // template: __dirname + '/templates/index', // The `.pug` or `.hbs` extension is appended automatically.
-        template: path.resolve(__dirname, `../templates/${temp}`),
-        context: {
-          // Data to be sent to template engine.
-          code: 'cf1a3f828287',
-          username: 'john doe',
-        },
-      })
-      .then((success) => {
-        console.log(success);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+  // public example(): void {
+  //   const temp = 'index';
+  //   this.mailerService
+  //     .sendMail({
+  //       to: 'dannyopeyemi24@gmail.com', // List of receivers email address
+  //       // from: 'dannyopeyemi@gmail.com', // Senders email address
+  //       subject: 'Testing Nest Mailermodule with template ✔',
+  //       // template: __dirname + '/templates/index', // The `.pug` or `.hbs` extension is appended automatically.
+  //       template: path.resolve(__dirname, `../templates/${temp}`),
+  //       context: {
+  //         // Data to be sent to template engine.
+  //         code: 'cf1a3f828287',
+  //         username: 'john doe',
+  //       },
+  //     })
+  //     .then((success) => {
+  //       console.log(success);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // }
 }

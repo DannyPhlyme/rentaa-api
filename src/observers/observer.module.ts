@@ -13,7 +13,7 @@ import { GadgetSubscriber } from './subscribers/gadget.subscriber';
       useClass: SearchService,
     },
     GadgetElasticIndex,
-    GadgetSubscriber,
+    // GadgetSubscriber,
   ],
   controllers: [],
   exports: [],

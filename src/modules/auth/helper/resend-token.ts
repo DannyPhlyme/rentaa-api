@@ -68,7 +68,6 @@ export class ResendToken {
         expiry_date: Formatter.calculate_days(7),
       });
 
-
       await this.TokenRepo.save(tokenInfo);
 
       await this.emailService.mailUser({
@@ -129,7 +128,7 @@ export class ResendToken {
         user_id: getRefreshToken.user.id,
       });
 
-      const generatedToken = this.authUtils.generateString(30);
+      const generatedToken = this.authUtils.generateString(150);
 
       const newRefreshToken = this.TokenRepo.create({
         user: getRefreshToken.user,

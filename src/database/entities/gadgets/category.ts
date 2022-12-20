@@ -26,3 +26,10 @@ export class Category extends BaseEntity {
   })
   description: string;
 }
+
+export class CategoryRepositoryFake {
+  public create(): void {}
+  public async save(): Promise<void> {}
+  public async remove(): Promise<void> {}
+  public async findOne(): Promise<void> {}
+}

@@ -57,9 +57,9 @@ export class VerifyEmail {
       await this.UserRepo.save(getUser);
 
       // send email
-      await this.emailService.sendMail({
-        data: emailTemplate('registerEmail', getUser.email),
-      });
+      // await this.emailService.sendMail({
+      //   data: emailTemplate('registerEmail', getUser.email),
+      // });
 
       // fire an event activity
 

@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne, BeforeUpdate, BeforeInsert } from 'typeorm';
 import { Status } from '../enum';
 import { User } from './user';
 // import * as bcrypt from 'bcrypt';
-import * as bcrypt from "bcryptjs"
+import * as bcrypt from 'bcryptjs';
 import { BaseEntity } from '../base';
 
 @Entity({

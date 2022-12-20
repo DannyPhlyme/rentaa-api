@@ -93,24 +93,23 @@ export class ReviewsController {
     );
   }
 
-    /**
+  /**
    * Find one review controller method
    *
    * @param id
    * @returns
    */
-     @UseGuards(JwtAuthGuard)
-     @Get(':id')
-     async findOne(
-      @Param(
-        'id',
-        new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
-      )
-      id: string,
-     ) {
-       return await this.reviewsService.findOne(id);
-     }
-
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(
+    @Param(
+      'id',
+      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+  ) {
+    return await this.reviewsService.findOne(id);
+  }
 
   /**
    * Update review controller method

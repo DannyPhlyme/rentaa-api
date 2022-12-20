@@ -1,0 +1,13 @@
+apps:
+  - script: ./dist/main.js
+    name: rentaa-app
+    watch: true
+    instances: max
+    exec_mode: cluster
+    env:
+      PORT: ${APP_PORT}
+      NODE_ENV: development
+    env_production:
+      NODE_PORT: ${APP_PORT}
+      NODE_ENV: production
+    time: true
