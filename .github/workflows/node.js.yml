@@ -16,16 +16,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Checkout Repository
+    - uses: actions/checkout@v3
+    - name: Checkout Repository
 
-      - name: Install Packages and Build
-        run: |
-          npm install
-          npm run build
+    - name: Install Packages and Build
+      run: |
+        npm install
+        npm run build
 
-      - uses: actions/upload-artifact@master
-      - name: Upload Artifacts
-        with:
-          name: build artifact
-          path: dist/
+    - uses: actions/upload-artifact@master
+    - name: Upload Artifacts
+      with:
+        name: build artifact
+        path: dist/
