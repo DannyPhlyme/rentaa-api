@@ -11,7 +11,7 @@ async function bootstrap() {
   // const express = app.getHttpAdapter().getInstance();
 
   // const assets = process.cwd() + `/assets/`; // Directory with static HTML/CSS/JS/other files
-  
+
   // // console.log(process.cwd() + `/templates/`);
 
   // const views = process.cwd() + `/templates/`; // Directory with *.njk templates
@@ -25,7 +25,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
-  
+
   await app.listen(process.env.APP_PORT || 3000);
 }
 bootstrap();

@@ -27,11 +27,18 @@ export class GadgetSubscriber implements EntitySubscriberInterface<Gadget> {
   }
 
   public async afterUpdate(event: UpdateEvent<Gadget>): Promise<any> {
-    const { entity, queryRunner: { data: { action } } } = event;
+    const {
+      entity,
+      queryRunner: {
+        data: { action },
+      },
+    } = event;
 
-    if(action == 'soft-remove')
-      return await this.gadgetElasticIndex.deleteGadgetDocument((<Gadget>entity).id);
-    else if(action == 'recover')
+    if (action == 'soft-remove')
+      return await this.gadgetElasticIndex.deleteGadgetDocument(
+        (<Gadget>entity).id,
+      );
+    else if (action == 'recover')
       return await this.gadgetElasticIndex.insertGadgetDocument(<Gadget>entity);
 
     return await this.gadgetElasticIndex.updateGadgetDocument(<Gadget>entity);

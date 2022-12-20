@@ -113,7 +113,6 @@ export class Registration {
       };
       // return 'ok';
     } catch (e) {
-      console.log('>>>>>e from register', e);
       throw new HttpException(
         e.response
           ? e.response

@@ -22,27 +22,27 @@ import { ObserverModule } from './observers/observer.module';
 @Module({
   imports: [
     // MailModule,
-    MailerModule.forRoot({
-      transport: {
-        host: process.env.MAIL_HOST,
-        port: 587,
-        secure: false, // upgrade later with STARTTLS
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASSWORD,
-        },
-      },
-      defaults: {
-        from: `"No Reply" <${process.env.MAIL_FROM}>`,
-      },
-      preview: true,
-      template: {
-        adapter: new EjsAdapter(), // or new PugAdapter()
-        options: {
-          strict: false,
-        },
-      },
-    }),
+    // MailerModule.forRoot({
+    //   transport: {
+    //     host: process.env.MAIL_HOST,
+    //     port: 587,
+    //     secure: false, // upgrade later with STARTTLS
+    //     auth: {
+    //       user: process.env.MAIL_USER,
+    //       pass: process.env.MAIL_PASSWORD,
+    //     },
+    //   },
+    //   defaults: {
+    //     from: `"No Reply" <${process.env.MAIL_FROM}>`,
+    //   },
+    //   preview: true,
+    //   template: {
+    //     adapter: new EjsAdapter(), // or new PugAdapter()
+    //     options: {
+    //       strict: false,
+    //     },
+    //   },
+    // }),
     AuthModule,
     UsersModule,
     GadgetsModule,

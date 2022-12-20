@@ -111,8 +111,6 @@ export class Auth {
         );
       }
 
-      // console.log('>>>>>>user', user.profile.avatarId);
-
       const token = this.jwtService.sign({
         user_id: user.id,
         avatar_id: user.profile.avatarId,
@@ -130,6 +128,7 @@ export class Auth {
         token: this.generateString(150),
         reason: TokenReason.REFRESH_TOKEN,
         expiry_date: Formatter.calculate_days(7),
+        user,
       });
 
       const refreshToken = await this.tokenRepo.save(refreshed);

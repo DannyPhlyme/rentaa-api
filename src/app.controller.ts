@@ -14,17 +14,8 @@ export class AppController {
     return await this.appService.index();
   }
 
-  /**
-   * Test for email sending
-   */
-  @Get('template')
-  sendMail() {
-    return this.appService.example();
-  }
-
   @Get('hello')
-  getHello() {
-    // console.log(path.join(__dirname, '..', 'assets'));
-    return 'hello';
+  async getHello() {
+    return this.appService.getHello();
   }
 }

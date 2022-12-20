@@ -341,7 +341,9 @@ export class GadgetsService {
       const photos: GadgetPhoto[] = gadget.photos;
 
       await this.photoRepository.softRemove(photos);
-      await this.gadgetRepository.softRemove(gadget, { data: { action: 'soft-remove' } });
+      await this.gadgetRepository.softRemove(gadget, {
+        data: { action: 'soft-remove' },
+      });
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -391,7 +393,9 @@ export class GadgetsService {
       const photos: GadgetPhoto[] = gadget.photos;
 
       await this.photoRepository.recover(photos);
-      await this.gadgetRepository.recover(gadget, { data: { action: 'recover' } });
+      await this.gadgetRepository.recover(gadget, {
+        data: { action: 'recover' },
+      });
 
       gadget = await this.gadgetRepository.findOne({
         relations: ['photos'],
@@ -535,7 +539,6 @@ export class GadgetsService {
     try {
       await s3Client.send(new PutObjectCommand(objectParams));
     } catch (error) {
-      console.log(error);
       throw new Error('An error occured');
     }
   }
