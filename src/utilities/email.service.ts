@@ -49,7 +49,7 @@ const env = new nunjucks.Environment(
 @Injectable()
 export class EmailService {
   constructor(
-    private readonly mailerService: MailerService,
+    // private readonly mailerService: MailerService,
     private adapterHost: HttpAdapterHost,
   ) {}
 
