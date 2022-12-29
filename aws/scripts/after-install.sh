@@ -10,6 +10,7 @@ cd /usr/local/webapps/rentaa
 unzip artifact.zip
 rm -rf artifact.zip
 rm -rf package-lock.json
+rm -rf node_modules
 
 # install application dependencies 
 npm install --legacy-peer-deps
