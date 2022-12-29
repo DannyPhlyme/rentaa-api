@@ -1,0 +1,632 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Rentaa Infrastructure
+Metadata:
+  ParameterGroups:
+    - Label:
+        default: VPC Configurations
+      Parameters:
+        - VpcCIDR
+        - PublicSubnet1CIDR
+        - PublicSubnet2CIDR
+    - Label:
+        default: Instance Configurations
+      Parameters:
+        - LaunchTemplate
+        - InstanceType
+    - Label:
+        default: Github Configurations
+      Parameters:
+        - GithubRepoName
+        - ThumbprintList
+Parameters:
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.192.0.0/16
+  PublicSubnetACIDR:
+    Description: >-
+      Please enter the IP range (CIDR notation) for the public subnet in the
+      first Availability Zone
+    Type: String
+    Default: 10.192.10.0/24
+  PublicSubnetBCIDR:
+    Description: >-
+      Please enter the IP range (CIDR notation) for the public subnet in the
+      second Availability Zone
+    Type: String
+    Default: 10.192.11.0/24
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    Description: >-
+      The type of Amazon EC2 Linux instances that will be launched for this
+      project.
+  AutoScalingGroupMinSize:
+    Type: Number
+    Default: 1
+    Description: Enter the Min Size for the ASG
+  AutoScalingGroupMaxSize:
+    Type: Number
+    Default: 2
+    Description: Enter the Max Size for the ASG
+  AutoScalingGroupDesiredCapacity:
+    Type: Number
+    Default: 2
+    Description: Enter the Desired Size for the ASG
+  ThumbprintList:
+    Type: String
+    Default: 6938fd4d98bab03faadb97b34396831e3780aea1
+    Description: >-
+      A thumbprint of an Open ID Connector is a SHA1 hash of the public
+      certificate of the host
+  GithubRepoName:
+    Type: String
+    Default: DannyPhlyme/rentaa-api
+    Description: GitHub repository name Ex-TestUser/TestCodeDeploy
+  KeyPair:
+    Type: String
+    Default: rentaa-key
+    Description: Enter the name of a keypair to be used with the EC2 instances
+Resources:
+  RentaaVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: Rentaa VPC
+  RentaaPublicSubnetA:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs 
+          Ref: 'AWS::Region'
+      CidrBlock: !Ref PublicSubnetACIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Rentaa Public Subnet-A (AZ1)
+      VpcId: !Ref RentaaVPC
+  RentaaPublicSubnetB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select 
+        - 1
+        - !GetAZs 
+          Ref: 'AWS::Region'
+      CidrBlock: !Ref PublicSubnetBCIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Rentaa Public Subnet-B (AZ2)
+      VpcId: !Ref RentaaVPC
+  RentaaInternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+  RentaaDHCPOptions:
+    Type: 'AWS::EC2::DHCPOptions'
+    Properties:
+      DomainName: !Sub '${AWS::Region}.ec2.internal'
+      DomainNameServers:
+        - AmazonProvidedDNS
+  RentaaNetworkAcl:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId: !Ref RentaaVPC
+  RentaaPublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref RentaaVPC
+  RentaaApplicationLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    DependsOn: RentaaVPCGatewayAttachment
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref RentaaALBSecurityGroup
+      Subnets:
+        - !Ref RentaaPublicSubnetA
+        - !Ref RentaaPublicSubnetB
+      Type: application
+  RentaaALBHTTPListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: RentaaVPCGatewayAttachment
+    Properties:
+      DefaultActions:
+        - ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn: !Ref RentaaTargetGroup
+            TargetGroupStickinessConfig:
+              DurationSeconds: 86400
+              Enabled: true
+          TargetGroupArn: !Ref RentaaTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref RentaaApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+  RentaaTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    DependsOn: RentaaVPCGatewayAttachment
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      UnhealthyThresholdCount: 2
+      HealthyThresholdCount: 2
+      HealthCheckPath: /
+      Port: 3000
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+      VpcId: !Ref RentaaVPC
+  RentaaAutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: RentaaVPCGatewayAttachment
+    Properties:
+      AvailabilityZones:
+        - !GetAtt 
+          - RentaaPublicSubnetA
+          - AvailabilityZone
+        - !GetAtt 
+          - RentaaPublicSubnetB
+          - AvailabilityZone
+      Cooldown: 300
+      DesiredCapacity: !Ref AutoScalingGroupDesiredCapacity
+      HealthCheckGracePeriod: 300
+      # HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref RentaaLaunchTemplate
+        Version: !GetAtt 
+          - RentaaLaunchTemplate
+          - DefaultVersionNumber
+      MaxSize: !Ref AutoScalingGroupMaxSize
+      MinSize: !Ref AutoScalingGroupMinSize
+      TargetGroupARNs:
+        - !Ref RentaaTargetGroup
+      TerminationPolicies:
+        - Default
+      VPCZoneIdentifier:
+        - !Ref RentaaPublicSubnetA
+        - !Ref RentaaPublicSubnetB
+      Tags:
+        - Key: Name
+          Value: Rentaa Auto-Scaled Instances
+          PropagateAtLaunch: true
+  RentaaEC2Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: RentaaWebAppRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - codedeploy.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+      Path: /
+      Policies:
+        - PolicyName: allow-webapp-deployment-bucket-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${RentaaWebAppDeploymentS3Bucket}/*'
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${RentaaGadgetS3Bucket}/*'
+  RentaaInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref RentaaEC2Role
+  RentaaLaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs:
+              VolumeSize: 15
+              VolumeType: gp2
+              DeleteOnTermination: true
+        IamInstanceProfile:
+          Arn: !GetAtt 
+            - RentaaInstanceProfile
+            - Arn
+        ImageId: ami-0574da719dca65348
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyPair
+        SecurityGroupIds:
+          - !GetAtt 
+            - RentaaEC2SecurityGroup
+            - GroupId
+        UserData: !Base64 
+          'Fn::Sub': >
+            #!/bin/bash
+
+
+            cd ~
+
+            sudo apt update
+
+            # install node version 16
+
+            curl -sL https://deb.nodesource.com/setup_16.x -o
+            nodesource_setup.sh
+
+            sudo bash nodesource_setup.sh
+
+            sudo apt install nodejs
+
+
+            # check node and npm version
+
+            node -v
+
+            npm -v
+
+
+            # install code-deploy agent
+
+            sudo apt --fix-broken install -y
+
+            sudo apt-get install ruby-full ruby-webrick wget -y
+
+            cd /tmp
+
+            wget
+            https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/releases/codedeploy-agent_1.3.2-1902_all.deb
+
+
+            mkdir codedeploy-agent_1.3.2-1902_ubuntu22
+
+
+            dpkg-deb -R codedeploy-agent_1.3.2-1902_all.deb
+            codedeploy-agent_1.3.2-1902_ubuntu22
+
+            sed 's/Depends:.*/Depends:ruby3.0/' -i
+            ./codedeploy-agent_1.3.2-1902_ubuntu22/DEBIAN/control
+
+            dpkg-deb -b codedeploy-agent_1.3.2-1902_ubuntu22/
+
+            sudo dpkg -i codedeploy-agent_1.3.2-1902_ubuntu22.deb
+
+
+            sudo systemctl list-units --type=service | grep codedeploy
+
+            sudo service codedeploy-agent status
+
+            snap list
+
+            npm install pm2 -g
+
+            pm2 startup systemd
+
+            sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
+
+            sudo systemctl start pm2-ubuntu
+  RentaaRDSDB:
+    Type: 'AWS::RDS::DBInstance'
+    DependsOn: RentaaVPCGatewayAttachment
+    Properties:
+      AllocatedStorage: 15
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      DBInstanceClass: db.t3.micro
+      Port: 5432
+      PubliclyAccessible: true
+      StorageType: gp2
+      BackupRetentionPeriod: 7
+      MasterUsername: rentaaAdmin
+      MasterUserPassword: '*mZmG*RQqwm7n9o!w78u'
+      PreferredBackupWindow: '07:47-08:17'
+      PreferredMaintenanceWindow: 'mon:12:54-mon:13:24'
+      DBName: rentaa
+      Engine: postgres
+      EngineVersion: 12.7
+      LicenseModel: postgresql-license
+      DBSubnetGroupName: !Ref RentaaDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref RentaaRDSSecurityGroup
+      Tags:
+        - Key: workload-type
+          Value: other
+  RentaaWebAppDeploymentS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+  RentaaGadgetS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: PublicRead
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3000
+      VersioningConfiguration:
+        Status: Suspended
+  RentaaDBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: default
+      SubnetIds:
+        - !Ref RentaaPublicSubnetA
+        - !Ref RentaaPublicSubnetB
+  RentaaEC2SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for rentaa ec2 instances
+      VpcId: !Ref RentaaVPC
+  RentaaALBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for rentaa application load balancer (ELB)
+      VpcId: !Ref RentaaVPC
+  RentaaRDSSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for rentaa RDS database
+      VpcId: !Ref RentaaVPC
+  RentaaS3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref RentaaGadgetS3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Id: Policy1468466027141
+        Statement:
+          - Sid: Stmt1468466021537
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${RentaaGadgetS3Bucket}/*'
+  RentaaScalingPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AutoScalingGroupName: !Ref RentaaAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageNetworkOut
+        TargetValue: 5000000
+  RentaaNetworkAclEntryA:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      Protocol: '-1'
+      RuleAction: allow
+      RuleNumber: 100
+      NetworkAclId: !Ref RentaaNetworkAcl
+  RentaaNetworkAclEntryB:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '-1'
+      RuleAction: allow
+      RuleNumber: 100
+      NetworkAclId: !Ref RentaaNetworkAcl
+  RentaaSubnetNetworkAclAssocationA:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      NetworkAclId: !Ref RentaaNetworkAcl
+      SubnetId: !Ref RentaaPublicSubnetA
+  RentaaSubnetNetworkAclAssocationB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      NetworkAclId: !Ref RentaaNetworkAcl
+      SubnetId: !Ref RentaaPublicSubnetB
+  RentaaPublicSubnetARouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref RentaaPublicSubnetA
+      RouteTableId: !Ref RentaaPublicRouteTable
+  RentaaPublicSubnetBRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref RentaaPublicSubnetB
+      RouteTableId: !Ref RentaaPublicRouteTable
+  RentaaVPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref RentaaVPC
+      InternetGatewayId: !Ref RentaaInternetGateway
+  RentaaVPCRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: RentaaVPCGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref RentaaPublicRouteTable
+      GatewayId: !Ref RentaaInternetGateway
+  RentaaVPCDHCPAssociation:
+    Type: 'AWS::EC2::VPCDHCPOptionsAssociation'
+    Properties:
+      VpcId: !Ref RentaaVPC
+      DhcpOptionsId: !Ref RentaaDHCPOptions
+  RentaaEC2SGIngressRuleForSSH:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref RentaaEC2SecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      CidrIp: 0.0.0.0/0
+  RentaaEC2SGIngressRuleForPort3000:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref RentaaEC2SecurityGroup
+      IpProtocol: tcp
+      FromPort: 3000
+      ToPort: 3000
+  RentaaALBSGIngressRuleForPort80:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref RentaaALBSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+  RentaaRDSSGIngressRuleForPort5432:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref RentaaRDSSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+  RentaaEC2SGEgressRule:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref RentaaEC2SecurityGroup
+      IpProtocol: '-1'
+  RentaaALBSGEgressRule:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref RentaaALBSecurityGroup
+      IpProtocol: '-1'
+  RentaaRDSSGEgressRule:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref RentaaRDSSecurityGroup
+      IpProtocol: '-1'
+  IDCProvider:
+    Type: 'AWS::IAM::OIDCProvider'
+    Properties:
+      Url: 'https://token.actions.githubusercontent.com'
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - !Ref ThumbprintList
+  RentaaGitHubIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      RoleName: CodeDeployRoleforRentaaGitHub
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: 'sts:AssumeRoleWithWebIdentity'
+            Principal:
+              Federated: !Ref IDCProvider
+            Condition:
+              StringLike:
+                'token.actions.githubusercontent.com:sub': !Sub 'repo:${GithubRepoName}:*'
+      MaxSessionDuration: 3600
+      Description: Github Actions role
+      Policies:
+        - PolicyName: CodeDeployRoleforRentaaGitHub-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'codedeploy:Get*'
+                  - 'codedeploy:Batch*'
+                  - 'codedeploy:CreateDeployment'
+                  - 'codedeploy:RegisterApplicationRevision'
+                  - 'codedeploy:List*'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:codedeploy:*:${AWS::AccountId}:*'
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${RentaaWebAppDeploymentS3Bucket}/*'
+  RentaaWebappApplication:
+    Type: 'AWS::CodeDeploy::Application'
+    Properties:
+      ApplicationName: Rentaa
+  RentaaWebappApplicationDeploymentGroup:
+    Type: 'AWS::CodeDeploy::DeploymentGroup'
+    Properties:
+      ApplicationName: !Ref RentaaWebappApplication
+      ServiceRoleArn: !GetAtt 
+        - CodeDeployRole
+        - Arn
+      DeploymentConfigName: CodeDeployDefault.OneAtATime
+      DeploymentGroupName: RentaaDG-A
+      AutoRollbackConfiguration:
+        Enabled: true
+        Events:
+          - DEPLOYMENT_FAILURE
+          - DEPLOYMENT_STOP_ON_REQUEST
+      AutoScalingGroups:
+        - !Ref RentaaAutoScalingGroup
+  CodeDeployRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+      Policies:
+        - PolicyName: allow-autoscaling
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ec2:RunInstances'
+                  - 'ec2:CreateTags'
+                  - 'iam:PassRole'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:codedeploy:*:${AWS::AccountId}:*'
+Outputs:
+  WebappUrl:
+    Description: Webapp URL
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt 
+          - RentaaApplicationLoadBalancer
+          - DNSName
+        - ':80/hello'
+  DeploymentGroup:
+    Description: Webapp Deployment Group
+    Value: !Ref RentaaWebappApplicationDeploymentGroup
+  DeploymentBucket:
+    Description: Deployment bucket
+    Value: !Ref RentaaWebAppDeploymentS3Bucket
+  ApplicationName:
+    Description: CodeDeploy Application name
+    Value: !Ref RentaaWebappApplication
+  GithubIAMRoleArn:
+    Description: IAM role for GitHub
+    Value: !GetAtt 
+      - RentaaGitHubIAMRole
+      - Arn
