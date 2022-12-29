@@ -11,6 +11,8 @@ unzip artifact.zip
 rm -rf artifact.zip
 rm -rf package-lock.json
 
+npm cache clean --force
+
 # install application dependencies 
 npm install
 # npm ci
