@@ -11,4 +11,5 @@ unzip artifact.zip
 rm -rf artifact.zip
 
 # install application dependencies 
-npm install
+# npm install
+npm ci
