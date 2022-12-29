@@ -7,4 +7,4 @@ if [ -d /usr/local/webapps ]; then
 fi
 
 mkdir -vp /usr/local/webapps/rentaa
-mkdir -vp /usr/local/webapps/resources/scripts
+mkdir -vp /usr/local/webapps/resources
