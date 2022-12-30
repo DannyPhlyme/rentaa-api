@@ -6,7 +6,7 @@ on:
 env:
   applicationfolder: ./
   AWS_REGION: us-east-1
-  S3BUCKET: rentaastack-rentaawebappdeployments3bucket-4pf3yd3ozk8
+  S3BUCKET: rentaastack-rentaawebappdeployments3bucket-fxwx2l456u6b
 
 
 jobs:
@@ -26,10 +26,10 @@ jobs:
           role-session-name: GitHub-Action-Role
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Set up Node 16
+      - name: Set up Node 14
         uses: actions/setup-node@v3
         with:
-          node-version: 16.19.0
+          node-version: 14
 
       - name: chmod
         run: chmod -R +x ./.github

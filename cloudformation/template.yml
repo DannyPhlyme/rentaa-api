@@ -259,9 +259,9 @@ Resources:
 
             sudo apt update
 
-            # install node version 16
+            # install node version 14
 
-            curl -sL https://deb.nodesource.com/setup_16.x -o
+            curl -sL https://deb.nodesource.com/setup_14.x -o
             nodesource_setup.sh
 
             sudo bash nodesource_setup.sh
