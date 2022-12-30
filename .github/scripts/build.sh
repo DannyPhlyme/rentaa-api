@@ -4,7 +4,7 @@ set -xe
 sudo apt install zip -y
 
 # Build and create a dist folder
-npm install
-npm run build
+yarn install
+yarn run build
 
-zip -r artifact.zip dist templates pm2.yml package.json package-lock.json
+zip -r artifact.zip dist templates pm2.yml package.json yarn.lock

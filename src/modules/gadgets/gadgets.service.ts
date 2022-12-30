@@ -33,8 +33,8 @@ export class GadgetsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    @Inject('SearchServiceInterface')
-    private readonly searchService: SearchServiceInterface<any>,
+    // @Inject('SearchServiceInterface')
+    // private readonly searchService: SearchServiceInterface<any>,
   ) {}
 
   /**
@@ -487,10 +487,10 @@ export class GadgetsService {
     }
   }
 
-  public async search(q: any): Promise<any> {
-    const data = GadgetSearchObject.searchObject(q);
-    return await this.searchService.searchIndex(data);
-  }
+  // public async search(q: any): Promise<any> {
+  //   const data = GadgetSearchObject.searchObject(q);
+  //   return await this.searchService.searchIndex(data);
+  // }
 
   /**
    * Utility method to upload photo to Amazon S3
