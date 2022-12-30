@@ -9,9 +9,6 @@ cd /usr/local/webapps/rentaa
 # deploy artifact in webapps folder
 unzip artifact.zip
 rm -rf artifact.zip
-# rm -rf package-lock.json
-# rm -rf node_modules
 
 # install application dependencies
-yarn install
-# npm install --legacy-peer-deps
+yarn install --prod
