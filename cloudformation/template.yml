@@ -275,6 +275,7 @@ Resources:
 
             npm -v
 
+            npm install --global yarn
 
             # install code-deploy agent
 
