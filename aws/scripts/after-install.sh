@@ -11,4 +11,4 @@ unzip artifact.zip
 rm -rf artifact.zip
 
 # install application dependencies
-yarn install --prod
+yarn install
