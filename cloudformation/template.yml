@@ -59,6 +59,12 @@ Parameters:
     Description: >-
       A thumbprint of an Open ID Connector is a SHA1 hash of the public
       certificate of the host
+  ImageId:
+    Type: String
+    Default: ami-0a6b2839d44d781b2
+    Description: >-
+      The Amazon EC2 Linux instance Amazon Machine Image (AMI), which
+      designates  the configuration of the new instance.
   GithubRepoName:
     Type: String
     Default: DannyPhlyme/rentaa-api
@@ -243,13 +249,16 @@ Resources:
           Arn: !GetAtt 
             - RentaaInstanceProfile
             - Arn
-        ImageId: ami-0574da719dca65348
+        ImageId: !Ref ImageId
         InstanceType: !Ref InstanceType
         KeyName: !Ref KeyPair
         SecurityGroupIds:
           - !GetAtt 
             - RentaaEC2SecurityGroup
             - GroupId
+        MetadataOptions:
+          HttpEndpoint: enabled
+          HttpTokens: required
         UserData: !Base64 
           'Fn::Sub': >
             #!/bin/bash
@@ -279,29 +288,20 @@ Resources:
 
             # install code-deploy agent
 
-            sudo apt --fix-broken install -y
+            sudo apt --fix-broken install -y sudo apt-get install -y ruby
 
-            sudo apt-get install ruby-full ruby-webrick wget -y
+            cd /tmp wget
+            https://aws-codedeploy-us-east-1.s3.amazonaws.com/releases/codedeploy-agent_1.0-1.1597_all.deb
+            mkdir codedeploy-agent_1.0-1.1597_ubuntu20
 
-            cd /tmp
+            dpkg-deb -R codedeploy-agent_1.0-1.1597_all.deb
+            codedeploy-agent_1.0-1.1597_ubuntu20 sed 's/2.0/2.7/' -i
+            ./codedeploy-agent_1.0-1.1597_ubuntu20/DEBIAN/control dpkg-deb -b
+            codedeploy-agent_1.0-1.1597_ubuntu20 sudo dpkg -i
+            codedeploy-agent_1.0-1.1597_ubuntu20.deb
 
-            wget
-            https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/releases/codedeploy-agent_1.3.2-1902_all.deb
-
-
-            mkdir codedeploy-agent_1.3.2-1902_ubuntu22
-
-
-            dpkg-deb -R codedeploy-agent_1.3.2-1902_all.deb
-            codedeploy-agent_1.3.2-1902_ubuntu22
-
-            sed 's/Depends:.*/Depends:ruby3.0/' -i
-            ./codedeploy-agent_1.3.2-1902_ubuntu22/DEBIAN/control
-
-            dpkg-deb -b codedeploy-agent_1.3.2-1902_ubuntu22/
-
-            sudo dpkg -i codedeploy-agent_1.3.2-1902_ubuntu22.deb
-
+            sudo systemctl start codedeploy-agent sudo systemctl enable
+            codedeploy-agent
 
             sudo systemctl list-units --type=service | grep codedeploy
 
@@ -313,14 +313,15 @@ Resources:
 
             # pm2 startup systemd
 
-            # sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2
-            # startup systemd -u ubuntu --hp /home/ubuntu
+            # sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 #
+            startup systemd -u ubuntu --hp /home/ubuntu
 
             # sudo systemctl start pm2-ubuntu
 
             cd ~
 
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o
+            "awscliv2.zip"
 
             echo "-----BEGIN PGP PUBLIC KEY BLOCK-----
             mQINBF2Cr7UBEADJZHcgusOJl7ENSyumXh85z0TRV0xJorM2B/JL0kHOyigQluUG
@@ -347,14 +348,15 @@ Resources:
             RrAGLzY7nP1xeg1a0aeP+pdsqjqlPJom8OCWc1+6DWbg0jsC74WoesAqgBItODMB
             rsal1y/q+bPzpsnWjzHV8+1/EtZmSc8ZUGSJOPkfC7hObnfkl18h+1QtKTjZme4d
             H17gsBJr+opwJw/Zio2LMjQBOqlm3K1A4zFTh7wBC7He6KPQea1p2XAMgtvATtNe
-            YLZATHZKTJyiqA== =vYOk -----END PGP PUBLIC KEY BLOCK-----" > public-key.pem
+            YLZATHZKTJyiqA== =vYOk -----END PGP PUBLIC KEY BLOCK-----" >
+            public-key.pem
 
-            gpg --import public-key.pem 
-            curl -o awscliv2.sig https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip.sig 
-            gpg --verify awscliv2.sig awscliv2.zip
+            gpg --import public-key.pem  curl -o awscliv2.sig
+            https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip.sig  gpg
+            --verify awscliv2.sig awscliv2.zip
 
             unzip awscliv2.zip 
-            
+
             sudo ./aws/install
 
             aws --version
