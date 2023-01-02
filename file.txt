@@ -59,3 +59,6 @@ sudo -u postgres psql
 
 sudo service docker status
 sudo service postgresql status
+
+# codedeploy logs
+cat /opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log
