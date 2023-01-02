@@ -6,7 +6,7 @@ cd /usr/local/webapps/rentaa
 # Start the application server(pm2 managed)
 # start pm2 first
 # sudo systemctl start pm2-ubuntu
-# yarn run start:prod
+yarn run start:prod
 
 # pm2 startup systemd
 # sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
@@ -26,10 +26,10 @@ cd /usr/local/webapps/rentaa
 
 # echo $USER
 
-pm2 start ./dist/main.js -n rentaa-app -f
-pm2 ls
+# pm2 start ./dist/main.js -n rentaa-app -f
+# pm2 ls
 
-cd ~
+# cd ~
 pm2 save
 sudo systemctl status pm2-ubuntu
 
