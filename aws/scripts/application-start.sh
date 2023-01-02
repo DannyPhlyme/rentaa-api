@@ -15,16 +15,16 @@ cd /usr/local/webapps/rentaa
 # pm2 save
 
 # systemctl reload-or-restart pm2-ubuntu
-sudo systemctl start pm2-ubuntu
-sudo systemctl status pm2-ubuntu
+# sudo systemctl start pm2-ubuntu
+# sudo systemctl status pm2-ubuntu
 
 # pm2 startup systemd
 # sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
 
 # switch to user ubuntu
-sudo su ubuntu
+# sudo su ubuntu
 
-echo $USER
+# echo $USER
 
 pm2 start ./dist/main.js -n rentaa-app -f
 pm2 ls

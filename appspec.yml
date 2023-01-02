@@ -19,4 +19,4 @@ hooks:
   ApplicationStart:
     - location: aws/scripts/application-start.sh
       timeout: 300
-      runas: root
+      runas: ubuntu

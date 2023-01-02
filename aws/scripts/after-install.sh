@@ -12,3 +12,6 @@ rm -rf artifact.zip
 
 # install application dependencies
 yarn install
+
+sudo systemctl start pm2-ubuntu
+sudo systemctl status pm2-ubuntu
