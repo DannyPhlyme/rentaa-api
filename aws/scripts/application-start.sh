@@ -14,7 +14,8 @@ cd /usr/local/webapps/rentaa
 # NODE_PORT=3000 pm2 start pm2.yml -n rentaa-app --env production
 # pm2 save
 
-systemctl reload-or-restart pm2-ubuntu
+# systemctl reload-or-restart pm2-ubuntu
+systemctl start pm2-ubuntu
 
 pm2 startup systemd
 env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
