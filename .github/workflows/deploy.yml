@@ -6,7 +6,7 @@ on:
 env:
   applicationfolder: ./
   AWS_REGION: us-east-1
-  S3BUCKET: rentaastack-rentaawebappdeployments3bucket-bji2n1n9sjun
+  S3BUCKET: rentaastack-rentaawebappdeployments3bucket-l0raj93gu673
 
 
 jobs:

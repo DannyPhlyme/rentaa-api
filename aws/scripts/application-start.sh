@@ -20,6 +20,8 @@ pm2 startup systemd
 env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
 
 pm2 start ./dist/main.js -n rentaa-app
+
+cd ~
 pm2 save
 
 # systemctl start pm2-ubuntu
