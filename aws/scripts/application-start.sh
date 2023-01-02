@@ -24,7 +24,9 @@ sudo systemctl status pm2-ubuntu
 # switch to user ubuntu
 sudo su ubuntu
 
-pm2 start ./dist/main.js -n rentaa-app
+echo $USER
+
+pm2 start ./dist/main.js -n rentaa-app -f
 pm2 ls
 
 cd ~
