@@ -2,7 +2,7 @@
 set -xe
 
 # Copy compressed artifact file from S3 bucket to webapps/rentaa folder
-aws s3 cp s3://rentaastack-rentaawebappdeployments3bucket-l0raj93gu673/artifact.zip /usr/local/webapps/rentaa/artifact.zip
+aws s3 cp s3://rentaastack-rentaawebappdeployments3bucket-bab8pq062lqc/artifact.zip /usr/local/webapps/rentaa/artifact.zip
  
 cd /usr/local/webapps/rentaa
 
