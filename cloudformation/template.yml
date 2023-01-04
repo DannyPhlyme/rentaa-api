@@ -361,6 +361,10 @@ Resources:
             sudo ./aws/install
 
             aws --version
+
+            # install jq
+            sudo apt-get update
+            sudo apt-get install jq -y
   RentaaRDSDB:
     Type: 'AWS::RDS::DBInstance'
     DependsOn: RentaaVPCGatewayAttachment

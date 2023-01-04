@@ -17,6 +17,7 @@ hooks:
       timeout: 300
       runas: root
   ApplicationStart:
+    - location: aws/scripts/export-variables.sh
     - location: aws/scripts/application-start.sh
       timeout: 300
       runas: ubuntu
