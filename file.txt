@@ -62,3 +62,4 @@ sudo service postgresql status
 
 # codedeploy logs
 cat /opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log
+export DATABASE_URL=$(aws ssm get-parameter --name "/rentaa/production/database_url" --with-decryption | jq ' .Parameter.Value' | sed -e 's/^"//' -e 's/"$//')
