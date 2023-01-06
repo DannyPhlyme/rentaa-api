@@ -1,6 +1,7 @@
 #!/bin/bash
 set -xe
 
+# deploy application revision from s3
 # Copy compressed artifact file from S3 bucket to webapps/rentaa folder
 aws s3 cp s3://rentaastack-rentaawebappdeployments3bucket-d9f3q7jzar8c/artifact.zip /usr/local/webapps/rentaa/artifact.zip
  
@@ -13,5 +14,5 @@ rm -rf artifact.zip
 # install application dependencies
 yarn install
 
-sudo systemctl start pm2-ubuntu
-sudo systemctl status pm2-ubuntu
+# sudo systemctl start pm2-ubuntu
+systemctl status pm2-ubuntu
