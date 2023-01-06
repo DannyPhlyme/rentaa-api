@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+# set -xe
 
 # check status of pm2 process 
 # (refer to application stop script)
