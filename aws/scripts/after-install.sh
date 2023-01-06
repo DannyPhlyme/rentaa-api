@@ -3,7 +3,7 @@ set -xe
 
 # deploy application revision from s3
 # Copy compressed artifact file from S3 bucket to webapps/rentaa folder
-aws s3 cp s3://rentaastack-rentaawebappdeployments3bucket-d9f3q7jzar8c/artifact.zip /usr/local/webapps/rentaa/artifact.zip
+aws s3 cp s3://rentaastack-rentaawebappdeployments3bucket-15z48osfbdjk/artifact.zip /usr/local/webapps/rentaa/artifact.zip
  
 cd /usr/local/webapps/rentaa
 
