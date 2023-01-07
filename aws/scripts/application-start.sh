@@ -1,8 +1,7 @@
 #!/bin/bash
 set -xe
 
-# test that this script can use sudo command to start
-# pm2 as user ubuntu
+# Start pm2 process
 sudo systemctl start pm2-ubuntu
 
 cd /usr/local/webapps/rentaa
