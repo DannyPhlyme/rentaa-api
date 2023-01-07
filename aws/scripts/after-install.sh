@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+# set -xe
 
 # deploy application revision from s3
 # Copy compressed artifact file from S3 bucket to webapps/rentaa folder
