@@ -519,6 +519,7 @@ export class GadgetsService {
         MetaData: data,
       };
     } catch (error) {
+      console.log(error);
       throw new Error('An error occured');
     }
   }
