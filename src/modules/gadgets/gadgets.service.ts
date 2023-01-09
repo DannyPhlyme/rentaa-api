@@ -89,6 +89,7 @@ export class GadgetsService {
         data: gadget,
       };
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         error.response
           ? error.response
