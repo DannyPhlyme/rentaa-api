@@ -6,7 +6,7 @@ sudo systemctl start pm2-ubuntu
 
 cd /usr/local/webapps/rentaa
 
-yarn run start:prod
+yarn start:prod
 
 pm2 save
 systemctl status pm2-ubuntu

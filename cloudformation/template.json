@@ -221,6 +221,30 @@
             "Properties": {
                 "DefaultActions": [
                     {
+                        "Type": "redirect",
+                        "RedirectConfig": {
+                            "Protocol": "HTTPS",
+                            "Port": 443,
+                            "Host": "#{host}",
+                            "Path": "/#{path}",
+                            "Query": "#{query}",
+                            "StatusCode": "HTTP_301"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "RentaaApplicationLoadBalancer"
+                },
+                "Port": 80,
+                "Protocol": "HTTP"
+            }
+        },
+        "RentaaALBHTTPSListener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "DependsOn": "RentaaVPCGatewayAttachment",
+            "Properties": {
+                "DefaultActions": [
+                    {
                         "ForwardConfig": {
                             "TargetGroups": [
                                 {
@@ -243,8 +267,14 @@
                 "LoadBalancerArn": {
                     "Ref": "RentaaApplicationLoadBalancer"
                 },
-                "Port": 80,
-                "Protocol": "HTTP"
+                "Port": 443,
+                "Protocol": "HTTPS",
+                "SslPolicy": "ELBSecurityPolicy-2016-08",
+                "Certificates": [
+                    {
+                        "CertificateArn": "arn:aws:acm:us-east-1:366630135809:certificate/5453670b-a5d4-43e4-85c5-9ba9a567d67a"
+                    }
+                ]
             }
         },
         "RentaaTargetGroup": {
@@ -254,7 +284,7 @@
                 "HealthCheckIntervalSeconds": 10,
                 "UnhealthyThresholdCount": 2,
                 "HealthyThresholdCount": 2,
-                "HealthCheckPath": "/",
+                "HealthCheckPath": "/api/v1/healthy",
                 "Port": 3000,
                 "Protocol": "HTTP",
                 "TargetGroupAttributes": [
@@ -748,6 +778,18 @@
                 "IpProtocol": "tcp",
                 "FromPort": 80,
                 "ToPort": 80
+            }
+        },
+        "RentaaALBSGIngressRuleForPort443": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "CidrIp": "0.0.0.0/0",
+                "GroupId": {
+                    "Ref": "RentaaALBSecurityGroup"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443
             }
         },
         "RentaaRDSSGIngressRuleForPort5432": {
