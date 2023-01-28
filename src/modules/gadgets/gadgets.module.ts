@@ -6,6 +6,7 @@ import { Category } from '../../database/entities/gadgets/category';
 import { Gadget } from '../../database/entities/gadgets/gadget';
 import { GadgetPhoto } from '../../database/entities/gadgets/gadget-photo';
 import { User } from '../../database/entities/auth/user';
+import { S3Provider } from 'src/providers/aws/clients/S3';
 // import { SearchModule } from '../search/search.module';
 // import { SearchService } from '../search/search.service';
 
@@ -14,6 +15,7 @@ import { User } from '../../database/entities/auth/user';
   controllers: [GadgetsController],
   providers: [
     GadgetsService,
+    S3Provider,
     // {
     //   provide: 'SearchServiceInterface',
     //   useClass: SearchService,

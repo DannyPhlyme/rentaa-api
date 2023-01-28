@@ -41,38 +41,38 @@ export class UsersController {
    * @param response
    * @returns
    */
-  @UseGuards(JwtAuthGuard)
-  @Get('profile-avatar')
-  async findProfileAvatar(
-    @Query('avatarID', ParseUUIDPipe) avatarId,
-    @Res({ passthrough: true }) response: Response,
-  ) {
-    const avatar = await this.usersService.findProfilePhoto(avatarId);
+  // @UseGuards(JwtAuthGuard)
+  // @Get('profile-avatar')
+  // async findProfileAvatar(
+  //   @Query('avatarID', ParseUUIDPipe) avatarId,
+  //   @Res({ passthrough: true }) response: Response,
+  // ) {
+  //   const avatar = await this.usersService.findProfilePhoto(avatarId);
 
-    if (avatar.data) {
-      const stream = Readable.from(avatar.data);
-      response.set({
-        'Content-Disposition': `inline; filename="${avatar.originalname}"`,
-        'Content-Type': 'image',
-      });
-      if (!avatar.data)
-        return {
-          message:
-            'No profile avatar detected. Please update your profile and upload a profile avatar',
-          data: avatar.data,
-        };
+  //   if (avatar.data) {
+  //     const stream = Readable.from(avatar.data);
+  //     response.set({
+  //       'Content-Disposition': `inline; filename="${avatar.originalname}"`,
+  //       'Content-Type': 'image',
+  //     });
+  //     if (!avatar.data)
+  //       return {
+  //         message:
+  //           'No profile avatar detected. Please update your profile and upload a profile avatar',
+  //         data: avatar.data,
+  //       };
 
-      // const stream = Readable.from(avatar.data);
+  //     // const stream = Readable.from(avatar.data);
 
-      response.set({
-        'Content-Disposition': `inline; filename="${avatar.originalname}"`,
-        'Content-Type': 'image',
-      });
+  //     response.set({
+  //       'Content-Disposition': `inline; filename="${avatar.originalname}"`,
+  //       'Content-Type': 'image',
+  //     });
 
-      return new StreamableFile(stream);
-    }
-    return (response.statusCode = 404);
-  }
+  //     return new StreamableFile(stream);
+  //   }
+  //   return (response.statusCode = 404);
+  // }
 
   /**
    * Update email controller method

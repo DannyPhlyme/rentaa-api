@@ -52,7 +52,10 @@ export class Registration {
         throw new HttpException('Email already Exists', HttpStatus.BAD_REQUEST);
       }
 
-      let avatar: Avatar = this.avatarRepo.create({});
+      let avatar: Avatar = this.avatarRepo.create({
+        bucketname: null,
+        key: null,
+      });
 
       avatar = await this.avatarRepo.save(avatar);
 
@@ -113,6 +116,7 @@ export class Registration {
       };
       // return 'ok';
     } catch (e) {
+      console.log(e);
       throw new HttpException(
         e.response
           ? e.response

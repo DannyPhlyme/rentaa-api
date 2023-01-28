@@ -17,6 +17,7 @@ import { UpdateUserDto } from './dto/update-user';
 import * as bcrypt from 'bcryptjs';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
 import { Avatar } from '../../database/entities/auth/avatar';
+import { S3Provider } from 'src/providers/aws/clients/S3';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +33,8 @@ export class UsersService {
 
     @InjectRepository(Avatar)
     private avatarRepository: Repository<Avatar>,
+
+    private s3Provider: S3Provider,
   ) {}
 
   /**
@@ -86,8 +89,6 @@ export class UsersService {
   }
 
   /**
-   * @todo I really need to fix this ASAP. Not using put method abeg
-   * Preferrably patch
    * @param id
    * @param updateUserDto
    * @param dataBuffer
@@ -132,12 +133,17 @@ export class UsersService {
       user = await this.userRepository.save(user);
 
       if (photo) {
+        const result = this.s3Provider.uploadFile(photo.dataBuffer, 'ProfilePhotos');
+
         let avatar: Avatar = await this.avatarRepository.findOne(
           profile.avatarId,
         );
+
         avatar.originalname = photo.originalname;
-        avatar.data = photo.dataBuffer;
+        avatar.key = (await result).Key;
+        avatar.bucketname = (await result).Bucket;
         avatar = await this.avatarRepository.save(avatar);
+
         profile.avatarId = avatar.id;
       }
 
