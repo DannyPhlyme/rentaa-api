@@ -3,7 +3,7 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
 import { SearchServiceInterface } from 'src/interfaces/search/search.interface';
-import { s3Client } from 'src/providers/aws/clients/S3';
+import { s3Client, S3Provider } from 'src/providers/aws/clients/S3';
 import { Not, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { User } from '../../database/entities/auth/user';
@@ -15,9 +15,6 @@ import { CreateGadgetDto } from './dto/create-gadget.dto';
 import { UpdateGadgetDto } from './dto/update-gadget.dto';
 import { GadgetSearchObject } from './model/gadget.search.object';
 
-/**
- * @todo ADD PM2
- */
 @Injectable()
 export class GadgetsService {
   constructor(
@@ -35,6 +32,8 @@ export class GadgetsService {
 
     // @Inject('SearchServiceInterface')
     // private readonly searchService: SearchServiceInterface<any>,
+
+    private s3Provider: S3Provider,
   ) {}
 
   /**
@@ -72,7 +71,7 @@ export class GadgetsService {
       for await (const [index, photoDto] of photoDtoArray.entries()) {
         if (index == 0) photoDto.cover = true; // set the first photo as cover photo
 
-        const result = this.uploadFileToS3(photoDto.buffer); // upload photo to S3
+        const result = this.s3Provider.uploadFile(photoDto.buffer, 'GadgetPhotos'); // upload photo to S3
 
         photoDto.key = (await result).Key;
         photoDto.bucketname = (await result).Bucket;
@@ -238,8 +237,9 @@ export class GadgetsService {
         }
 
         for (let photo = 0; photo < photos.length; photo++) {
-          await this.uploadFileToS3(
+          await this.s3Provider.uploadFile(
             photoDtoArray[photo].buffer,
+            'GadgetPhotos',
             photos[photo].key,
           ); // update s3 photo in aws
 
@@ -500,72 +500,27 @@ export class GadgetsService {
    * @param key
    * @returns
    */
-  private async uploadFileToS3(
-    dataBuffer: Buffer,
-    key?: string,
-    // filename: string,
-  ): Promise<{ Key: string; Bucket: string; MetaData: any }> {
-    const objectParams = {
-      Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-      Key: key ? key : `GadgetPhotos/${uuid()}.jpg`,
-      Body: dataBuffer,
-    };
+  // private async uploadFileToS3(
+  //   dataBuffer: Buffer,
+  //   key?: string,
+  //   // filename: string,
+  // ): Promise<{ Key: string; Bucket: string; MetaData: any }> {
+  //   const objectParams = {
+  //     Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
+  //     Key: key ? key : `GadgetPhotos/${uuid()}.jpg`,
+  //     Body: dataBuffer,
+  //   };
 
-    try {
-      const data = await s3Client.send(new PutObjectCommand(objectParams));
-      return {
-        Key: objectParams.Key,
-        Bucket: objectParams.Bucket,
-        MetaData: data,
-      };
-    } catch (error) {
-      console.log(error);
-      throw new Error('An error occured');
-    }
-  }
-
-  /**
-   * @todo use function overloading for update and upload functions
-   * key should be of type any while converting it to string throw
-   * errors where appropriate
-   * @param dataBuffer
-   * @param key
-   */
-  private async updateS3File(dataBuffer: Buffer, key: string) {
-    const objectParams = {
-      Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-      Key: key,
-      Body: dataBuffer,
-    };
-
-    try {
-      await s3Client.send(new PutObjectCommand(objectParams));
-    } catch (error) {
-      throw new Error('An error occured');
-    }
-  }
-
-  /**
-   * @todo Write a job to delete images from Amazon s3 based on
-   * a set of criteria
-   * @param key
-   * @returns
-   */
-  private async deleteFileFromS3(key: string) {
-    const objectParams = {
-      Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-      Key: `GadgetPhotos/${key}`,
-    };
-
-    try {
-      const data = await s3Client.send(new DeleteObjectCommand(objectParams));
-      return {
-        Key: objectParams.Key,
-        Bucket: objectParams.Bucket,
-        MetaData: data,
-      };
-    } catch (error) {
-      throw new Error('An error occured');
-    }
-  }
+  //   try {
+  //     const data = await s3Client.send(new PutObjectCommand(objectParams));
+  //     return {
+  //       Key: objectParams.Key,
+  //       Bucket: objectParams.Bucket,
+  //       MetaData: data,
+  //     };
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new Error('An error occured');
+  //   }
+  // }
 }

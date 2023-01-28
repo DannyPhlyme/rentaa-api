@@ -10,6 +10,7 @@ import { Profile } from 'src/database/entities/auth/profile';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Avatar } from '../../database/entities/auth/avatar';
+import { S3Provider } from 'src/providers/aws/clients/S3';
 
 @Module({
   controllers: [UsersController],
@@ -28,6 +29,6 @@ import { Avatar } from '../../database/entities/auth/avatar';
       Avatar,
     ]),
   ],
-  providers: [UsersService],
+  providers: [UsersService, S3Provider],
 })
 export class UsersModule {}

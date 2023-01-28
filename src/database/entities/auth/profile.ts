@@ -7,14 +7,14 @@ import { Review } from '../reviews/review';
   name: 'profiles',
 })
 export class Profile extends BaseEntity {
-  @OneToOne(() => Avatar)
+  @OneToOne(() => Avatar, { eager: true })
   @JoinColumn({ name: 'avatarId', referencedColumnName: 'id' })
   avatar: Avatar;
 
   @OneToMany(() => Review, (review) => review.profile, {
     onDelete: 'SET NULL', // fallback for delete
     eager: true,
-  })
+  })  
   reviews: Review[];
 
   @Column({ nullable: false })
