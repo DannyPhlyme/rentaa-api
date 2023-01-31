@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Review } from '../../database/entities/reviews/review';
 import { Profile } from '../../database/entities/auth/profile';
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import { Avatar } from 'src/database/entities/auth/avatar';
 
 @Injectable()
 export class ReviewsService {
@@ -19,6 +20,9 @@ export class ReviewsService {
 
     @InjectRepository(Profile)
     private profileRepository: Repository<Profile>,
+
+    @InjectRepository(Avatar)
+    private avatarRepository: Repository<Avatar>,
   ) {}
 
   /**
@@ -51,7 +55,7 @@ export class ReviewsService {
 
       if (!reviewee)
         throw new HttpException(
-          'Reviewee does not exist',
+          'The user you are trying to review does not exist',
           HttpStatus.BAD_REQUEST,
         );
 
@@ -59,11 +63,11 @@ export class ReviewsService {
 
       if (!profile)
         throw new HttpException(
-          'Reviewee profile does not exist',
+          'The user you are trying to review does not exist',
           HttpStatus.BAD_REQUEST,
         );
 
-      const avatarId = profile.avatarId;
+      const avatarId: string = user.profile.avatarId;
 
       const userReview: Review = this.reviewRepository.create({
         review,
@@ -122,9 +126,25 @@ export class ReviewsService {
       });
       let profile: Profile = user.profile;
 
-      if (!revieweeId)
-        return paginate(this.reviewRepository, options, { where: { profile } });
-      else {
+      if (!revieweeId) {
+        const getReviews: Review[] = await this.reviewRepository.find({
+          where: {
+            profile,
+          },
+        });
+
+        const reviews = getReviews;
+        for await (const [index, review] of reviews.entries()) {
+          const avatar = await this.avatarRepository.findOne({
+            id: review.avatarId,
+          });
+
+          review.avatarId = avatar.key;
+          console.log(review);
+        }
+
+        return reviews;
+      } else {
         user = await this.userRepository.findOne({
           relations: ['profile'],
           where: {
@@ -132,8 +152,30 @@ export class ReviewsService {
           },
         });
 
+        if (!user)
+          throw new HttpException(
+            'The user you are trying to review does not exist',
+            HttpStatus.BAD_REQUEST,
+          );
+
         profile = user.profile;
-        return paginate(this.reviewRepository, options, { where: { profile } });
+
+        const getReviews: Review[] = await this.reviewRepository.find({
+          where: {
+            profile,
+          },
+        });
+
+        const reviews = getReviews;
+        for await (const [index, review] of reviews.entries()) {
+          const avatar = await this.avatarRepository.findOne({
+            id: review.avatarId,
+          });
+
+          review.avatarId = avatar.key;
+        }
+
+        return reviews;
       }
     } catch (error) {
       throw new HttpException(
