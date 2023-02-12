@@ -55,7 +55,7 @@ export class EmailService {
 
       const msgParams = {
         to: payload.to, // Change to your recipient
-        from: 'dannyopeyemi@gmail.com', // Change to your verified sender
+        from: 'ngrentaa@gmail.com', // Change to your verified sender
         subject: payload.subject,
         html,
       };
