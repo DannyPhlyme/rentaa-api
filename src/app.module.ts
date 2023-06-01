@@ -34,6 +34,7 @@ import { ObserverModule } from './observers/observer.module';
       // password: process.env.DB_PASSWORD,
       // database: process.env.DB,
       url: process.env.DATABASE_URL,
+      ssl: true,
       // ssl: {
       //   rejectUnauthorized: false,
       // },
